@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeapMotionExtend", "LeapMotionExtend.csproj", "{478A17B4-B902-B4B8-78F2-484DB31EA0F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeapMotionExtend.Editor", "LeapMotionExtend.Editor.csproj", "{24C935DE-D442-7483-FE4F-524176622F7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{478A17B4-B902-B4B8-78F2-484DB31EA0F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{478A17B4-B902-B4B8-78F2-484DB31EA0F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{478A17B4-B902-B4B8-78F2-484DB31EA0F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{478A17B4-B902-B4B8-78F2-484DB31EA0F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24C935DE-D442-7483-FE4F-524176622F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24C935DE-D442-7483-FE4F-524176622F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24C935DE-D442-7483-FE4F-524176622F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24C935DE-D442-7483-FE4F-524176622F7E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
