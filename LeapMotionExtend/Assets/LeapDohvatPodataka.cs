@@ -271,6 +271,17 @@ public class LeapDohvatPodataka : MonoBehaviour
     void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
 
+        if (zgloboviIKosti != null)
+        {
+
+            foreach (GameObject go in zgloboviIKosti)
+            {
+                Destroy(go);
+            }
+            zgloboviIKosti.Clear();
+
+        }
+
         foreach (Hand hand in hands)
         {
             if (hand == hands[0])
@@ -291,17 +302,6 @@ public class LeapDohvatPodataka : MonoBehaviour
                     // bojaZgloba = hand.IsLeft ? new Color(250, 128, 114) : new Color(65, 105, 225);
                     bojaZgloba = hand.IsLeft ? new Color(0.98F, 0.5F, 0.44F) : new Color(0.25F, 0.41F, 0.88F);
                     //bojaZgloba = hand.IsLeft ?  Color.red :  Color.blue;
-                }
-
-                if (zgloboviIKosti != null)
-                {
-
-                    foreach (GameObject go in zgloboviIKosti)
-                    {
-                        Destroy(go);
-                    }
-                    zgloboviIKosti.Clear();
-
                 }
 
                 // Iscrtavanje sfere (palm-a)
