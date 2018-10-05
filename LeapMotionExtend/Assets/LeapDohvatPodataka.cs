@@ -270,7 +270,6 @@ public class LeapDohvatPodataka : MonoBehaviour
 
     void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
-
         if (zgloboviIKosti != null)
         {
 
@@ -284,8 +283,8 @@ public class LeapDohvatPodataka : MonoBehaviour
 
         foreach (Hand hand in hands)
         {
-            if (hand == hands[0])
-            {
+            //if (hand == hands[0])
+            //{
                 //Debug.Log("check" + hand + hands[0]);
                 Color bojaZgloba;
 
@@ -359,108 +358,10 @@ public class LeapDohvatPodataka : MonoBehaviour
                         zgloboviIKosti.Add(k);
                     } // for
                 } // foreach finger
-            }
+            //}
        
         }
     } // metoda
-
-
-    void IscrtajRukeee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
-    {
-
-        if (zgloboviIKosti != null)
-        {
-
-            foreach (GameObject go in zgloboviIKosti)
-            {
-                Destroy(go);
-            }
-            zgloboviIKosti.Clear();
-
-        }
-
-        foreach (Hand hand in hands)
-        {
-            if (hand == hands[0])
-            {
-                //Debug.Log("check" + hand + hands[0]);
-                Color bojaZgloba;
-
-                if (!localData)
-                {
-                    // Podaci preko mreže s drugog LEAP uređaja --> PUNA BOJA
-
-                    bojaZgloba = hand.IsLeft ? Color.red : Color.blue;
-                }
-                else
-                {
-                    // Podaci s lokalnog uređaja priključenog na računalo
-
-                    // bojaZgloba = hand.IsLeft ? new Color(250, 128, 114) : new Color(65, 105, 225);
-                    bojaZgloba = hand.IsLeft ? new Color(0.98F, 0.5F, 0.44F) : new Color(0.25F, 0.41F, 0.88F);
-                    //bojaZgloba = hand.IsLeft ?  Color.red :  Color.blue;
-                }
-
-                // Iscrtavanje sfere (palm-a)
-                if (prikaziPolozajDlana)
-                {
-                    /* Iscrtavanje položaja dlana */
-                    GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    // polozajDlana.transform.position = start;
-                    polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-                    polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                    zgloboviIKosti.Add(polozajDlana);
-
-                }
-
-                int i = 0;
-                // foreach (Finger f in hand.Fingers)
-                for (int e = 0; e < 5; e++)
-                {
-                    Finger f = hand.Fingers[e];
-
-                    // TYPE_THUMB = = 0 - TYPE_INDEX = = 1 - TYPE_MIDDLE = = 2 - TYPE_RING = = 3 - TYPE_PINKY = = 4 -
-                    GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    k.transform.position = Leap2UnityVector(f.TipPosition);
-                    k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                    if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-
-                    zgloboviIKosti.Add(k);
-                    k.name = "Vrh prsta " + i++;
-
-                    for (int j = 0; j < 4; j++)
-                    {
-                        k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                        k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                        if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-                        zgloboviIKosti.Add(k);
-                        k.name = "Zglob prethodni" + j;
-
-                        if ((!prikaziKostiDlana) && (j == 0)) continue;
-
-                        // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
-                        Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                        Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
-
-                        k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                        Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
-                        k.transform.position = pos;
-                        k.transform.up = nextJoint - prevJoint;
-
-                        float razdaljina = Vector3.Distance(prevJoint, nextJoint);
-                        k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
-
-                        k.name = "Kost " + j;
-                        zgloboviIKosti.Add(k);
-                    } // for
-                } // foreach finger
-            }
-
-        }
-    } // metoda
-
 
     void IscrtajRuke(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
@@ -715,6 +616,16 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             }
 
+            // popravak ukoliko Leap ucita pogresnu ruku
+            if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
+            {
+                Izbrisi(zgloboviIKostiLeap);
+            }
+            if (desnarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
+            {
+                Izbrisi(zgloboviIKostiPrimljeniPodaci);
+            }
+
             // PRVI UVJET ZA LIJEVE RUKE
             if (kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala) 
             {
@@ -729,12 +640,12 @@ public class LeapDohvatPodataka : MonoBehaviour
             // DRUGI UVJET ZA DESNE RUKE
             if (kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
             {
-                IscrtajRukeee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true);
+                IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true);
             }
 
             else if (KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
             {
-                IscrtajRukeee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, false);
+                IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, false);
             }
 
        
@@ -745,7 +656,20 @@ public class LeapDohvatPodataka : MonoBehaviour
         }
 
     } // Update
+    // metoda koja popravlja ukoliko Leap ucita pogresnu ruku
+    void Izbrisi(List<GameObject> zgloboviIKosti)
+    {
+        if (zgloboviIKosti != null)
+        {
 
+            foreach (GameObject go in zgloboviIKosti)
+            {
+                Destroy(go);
+            }
+            zgloboviIKosti.Clear();
+
+        }
+    }
 
     /*************************************************************************/
 
