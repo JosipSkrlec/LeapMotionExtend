@@ -68,6 +68,7 @@ public class LeapDohvatPodataka : MonoBehaviour
         }// foreach
     }//metoda
 
+
     void OnGUI()
     {
         int w = Screen.width, h = Screen.height;
@@ -798,6 +799,7 @@ public class LeapDohvatPodataka : MonoBehaviour
             catch (Exception err)
             {
                 // print(err.ToString());
+                //Debug.Log("Error kod ReceiveDataOnce : " + err.Message);
             }
 
             return data;

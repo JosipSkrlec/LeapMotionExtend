@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2015
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeapMotionExtend", "LeapMotionExtend.csproj", "{478A17B4-B902-B4B8-78F2-484DB31EA0F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeapMotionExtend.Editor", "LeapMotionExtend.Editor.csproj", "{24C935DE-D442-7483-FE4F-524176622F7E}"
