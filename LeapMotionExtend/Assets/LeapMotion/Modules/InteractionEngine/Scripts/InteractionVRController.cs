@@ -167,7 +167,7 @@ namespace Leap.Unity.Interaction {
           }
           message += " was detected; disabling controller object. Please check the "
                    + "device string if this was in error.";
-          Debug.Log(message, gameObject);
+          //Debug.Log(message, gameObject);
           gameObject.SetActive(false);
         }
       }
