@@ -617,7 +617,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             }
 
-            // popravak ukoliko Leap ucita pogresnu ruku
+            // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena
             if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
             {
                 Izbrisi(zgloboviIKostiLeap);
@@ -626,6 +626,14 @@ public class LeapDohvatPodataka : MonoBehaviour
             {
                 Izbrisi(zgloboviIKostiPrimljeniPodaci);
             }
+            //if (lijevarukatrenutni.Count != 0 || lijevarukaposlani.Count != 0)
+            //{
+            //    Izbrisi(zgloboviIKostiLeap);
+            //}
+            //if (desnarukatrenutni.Count != 0 || desnarukaposlani.Count != 0)
+            //{
+            //    Izbrisi(zgloboviIKostiPrimljeniPodaci);
+            //}
 
             // PRVI UVJET ZA LIJEVE RUKE
             if (kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
