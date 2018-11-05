@@ -27,12 +27,23 @@ public class LeapDohvatPodataka : MonoBehaviour
 
     // za prikaz konekcije (na koju ip adresu je konektiran)
     public Text tekst;
+    public bool DesniLeap = true;
+    public GameObject LeapHandController;
 
     private void Start()
     {
         leapProvider = FindObjectOfType<LeapServiceProvider>();
 
         Konekcija();
+
+        if (DesniLeap == true)
+        {
+            LeapHandController.transform.position = new Vector3(0.25f,0.0f,0.0f);
+        }
+        else
+        {
+            LeapHandController.transform.position = new Vector3(-0.25f, 0.0f, 0.0f);
+        }
 
         udpSend.Init();
         udpReceive.Init();
@@ -579,21 +590,41 @@ public class LeapDohvatPodataka : MonoBehaviour
             List<Hand> lijevarukaposlani = new List<Hand>();
             List<Hand> desnarukaposlani = new List<Hand>();
 
+
             // hands podaci iz trenutnog racunala
             foreach (Hand hh in currentFrame.Hands)
             {
                 if (hh.IsLeft)
                 {
-                    KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
-                    //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
-                    lijevarukatrenutni.Add(hh);
+                    if (DesniLeap == true)
+                    {
+                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
+                        //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
+                        lijevarukatrenutni.Add(hh);
+                    }
+                    else
+                    {
+                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala + hh.PalmPosition.x;
+                        //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
+                        lijevarukatrenutni.Add(hh);
+                    }
 
                 }
                 else if (!hh.IsLeft)
                 {
-                    KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 - hh.PalmPosition.x;
-                    //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
-                    desnarukatrenutni.Add(hh);
+                    if (DesniLeap == true)
+                    {
+                        KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 - hh.PalmPosition.x;
+                        //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
+                        desnarukatrenutni.Add(hh);
+                    }
+                    else
+                    {
+                        KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 + hh.PalmPosition.x;
+                        //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
+                        desnarukatrenutni.Add(hh);
+                    }
+
                 }
 
             }
@@ -603,16 +634,35 @@ public class LeapDohvatPodataka : MonoBehaviour
             {
                 if (h.IsLeft)
                 {
-                    kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
-                    //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
-                    lijevarukaposlani.Add(h);
+                    if (DesniLeap == true)
+                    {
+                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
+                        //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
+                        lijevarukaposlani.Add(h);
+                    }
+                    else
+                    {
+                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka - h.PalmPosition.x;
+                        //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
+                        lijevarukaposlani.Add(h);
+                    }
 
                 }
                 else if (!h.IsLeft)
                 {
-                    kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
-                    //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
-                    desnarukaposlani.Add(h);
+                    if (DesniLeap == true)
+                    {
+                        kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
+                        // Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+                        desnarukaposlani.Add(h);
+                    }
+                    else
+                    {
+                        kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 - h.PalmPosition.x;
+                        // Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+                        desnarukaposlani.Add(h);
+                    }
+
                 }
 
             }
@@ -651,18 +701,16 @@ public class LeapDohvatPodataka : MonoBehaviour
             {
                 IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true);
             }
-
             else if (KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
             {
                 IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true);
             }
 
-
         }
         else
         {
             // izvodi ukoliko je data == null tj. ukoliko konekcija nije uspostavljena
-            //IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
+            IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
         }
 
     } // Update
@@ -679,6 +727,7 @@ public class LeapDohvatPodataka : MonoBehaviour
             zgloboviIKosti.Clear();
 
         }
+
     }
 
     /*************************************************************************/
