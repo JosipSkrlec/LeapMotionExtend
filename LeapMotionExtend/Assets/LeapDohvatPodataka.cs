@@ -74,7 +74,14 @@ public class LeapDohvatPodataka : MonoBehaviour
 
                         Debug.Log("konekcija na gateway: " + adress.Address.ToString());
                         //IP = adress.Address.ToString();
-                        gatewayadresa = adress.Address.ToString();
+                        if (adress.Address.ToString() == "0.0.0.0")
+                        {
+                            Debug.Log("konekcija na gateway: " + "-----");
+                        }
+                        else
+                        {
+                            gatewayadresa = adress.Address.ToString();
+                        }
                         tekst.text = gatewayadresa;
                     }
                 }
@@ -100,8 +107,8 @@ public class LeapDohvatPodataka : MonoBehaviour
         float msec = deltaTime * 1000.0f;
         float fps = 1.0f / deltaTime;
         string text = string.Format("{0:0.0} ms ({1:0.} fps)", msec, fps);
-        GUI.Label(rect, text, style);
-
+        GUI.Label(rect, text, style);   
+            
     }
 
     private UnityEngine.Vector3 Leap2UnityVector(Leap.Vector v)
@@ -993,9 +1000,14 @@ public class LeapDohvatPodataka : MonoBehaviour
                     foreach (GatewayIPAddressInformation adress in adresses)
                     {
 
-                        Debug.Log("Adresa gateway(konekcija): " + adress.Address.ToString());
-                        //IP = adress.Address.ToString();
-                        gatewayadresa = adress.Address.ToString();
+                        if (adress.Address.ToString() == "0.0.0.0")
+                        {
+                            Debug.Log("konekcija na gateway: " + "-----");
+                        }
+                        else
+                        {
+                            gatewayadresa = adress.Address.ToString();
+                        }
 
                     }
                 }//if
