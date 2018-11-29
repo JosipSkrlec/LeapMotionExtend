@@ -28,6 +28,7 @@ public class LeapDohvatPodataka : MonoBehaviour
     // za prikaz konekcije (na koju ip adresu je konektiran)
     public Text tekst;
     public bool DesniLeap = true;
+    public bool slanjePodataka = false;
     public GameObject LeapHandController;
 
     private void Start()
@@ -38,11 +39,17 @@ public class LeapDohvatPodataka : MonoBehaviour
 
         if (DesniLeap == true)
         {
-            LeapHandController.transform.position = new Vector3(0.25f,0.0f,0.0f);
+            // dalja crta (2)
+            //LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f); // new Vector3(0.19f,-0.03f,0.022f);
+            //LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
+
+            // bliža crta (1)
+            LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f); // new Vector3(0.19f,-0.03f,0.022f);
+            LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
         }
         else
         {
-            LeapHandController.transform.position = new Vector3(-0.25f, 0.0f, 0.0f);
+            LeapHandController.transform.position = new Vector3(-0.21f, 0.0f, 0.0f);
         }
 
         udpSend.Init();
@@ -551,19 +558,24 @@ public class LeapDohvatPodataka : MonoBehaviour
         Frame currentFrame = leapProvider.CurrentFrame;
 
         // refresh varijable na 10 pomocu kojih mjerimo udaljenost Palm-a
-        kordinateIzPoslanihPodataka = 10.0f;
-        KordinateIzTrenutnogRacunala = 10.0f;
-        kordinateIzPoslanihPodataka1 = 10.0f;
-        KordinateIzTrenutnogRacunala1 = 10.0f;
+        kordinateIzPoslanihPodataka = 5.0f;
+        KordinateIzTrenutnogRacunala = 5.0f;
+        kordinateIzPoslanihPodataka1 = 5.0f;
+        KordinateIzTrenutnogRacunala1 = 5.0f;
 
-        //Dio kôda za slanje podataka
-        IFormatter formatterSend = new BinaryFormatter();
-        MemoryStream msSend = new MemoryStream();
-        formatterSend.Serialize(msSend, HandsToFloatArray(currentFrame.Hands));
-        byte[] bytePodaciRL = msSend.ToArray();
-        // salje na drugo racunalo
-        udpSend.sendBytes(bytePodaciRL);
-        // -- završetak dijela kôda za slanje podataka.
+        if (slanjePodataka != false)
+        {
+
+            //Dio kôda za slanje podataka
+            IFormatter formatterSend = new BinaryFormatter();
+            MemoryStream msSend = new MemoryStream();
+            formatterSend.Serialize(msSend, HandsToFloatArray(currentFrame.Hands));
+            byte[] bytePodaciRL = msSend.ToArray();
+            // salje na drugo racunalo
+            udpSend.sendBytes(bytePodaciRL);
+            // -- završetak dijela kôda za slanje podataka.
+
+        }
 
         // Dio kôda za primanje podataka
         float time1 = Time.realtimeSinceStartup;
@@ -589,7 +601,6 @@ public class LeapDohvatPodataka : MonoBehaviour
             // lista Hand od prenesenih podatak sa leap-a
             List<Hand> lijevarukaposlani = new List<Hand>();
             List<Hand> desnarukaposlani = new List<Hand>();
-
 
             // hands podaci iz trenutnog racunala
             foreach (Hand hh in currentFrame.Hands)
@@ -653,16 +664,18 @@ public class LeapDohvatPodataka : MonoBehaviour
                     if (DesniLeap == true)
                     {
                         kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
-                        // Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+                        //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
                         desnarukaposlani.Add(h);
+
                     }
                     else
                     {
                         kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 - h.PalmPosition.x;
-                        // Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+                        //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
                         desnarukaposlani.Add(h);
                     }
-
+                                            
+            
                 }
 
             }
