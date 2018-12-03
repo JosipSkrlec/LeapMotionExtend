@@ -29,6 +29,7 @@ public class LeapDohvatPodataka : MonoBehaviour
     public Text tekst;
     public bool DesniLeap = true;
     public bool slanjePodataka = false;
+    public bool prvaCrta = true;
     public GameObject LeapHandController;
 
     private void Start()
@@ -39,17 +40,26 @@ public class LeapDohvatPodataka : MonoBehaviour
 
         if (DesniLeap == true)
         {
-            // dalja crta (2)
-            //LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f); // new Vector3(0.19f,-0.03f,0.022f);
-            //LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
+            if (prvaCrta == true)
+            {
+                //pozicija
+                LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f);
+                // rotacija
+                LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
+            }
+            else
+            {
+                //pozicija
+                LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f);
+                // rotacija
+                LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
+            }
 
-            // bliža crta (1)
-            LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f); // new Vector3(0.19f,-0.03f,0.022f);
-            LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
         }
+        // lijevi leap
         else
         {
-            LeapHandController.transform.position = new Vector3(-0.21f, 0.0f, 0.0f);
+            LeapHandController.transform.position = new Vector3(-0.21f,0.0f,0.0f);
         }
 
         udpSend.Init();
@@ -71,8 +81,7 @@ public class LeapDohvatPodataka : MonoBehaviour
                 {
                     foreach (GatewayIPAddressInformation adress in adresses)
                     {
-
-                        Debug.Log("konekcija na gateway: " + adress.Address.ToString());
+                                                
                         //IP = adress.Address.ToString();
                         if (adress.Address.ToString() == "0.0.0.0")
                         {
@@ -81,6 +90,8 @@ public class LeapDohvatPodataka : MonoBehaviour
                         else
                         {
                             gatewayadresa = adress.Address.ToString();
+                            Debug.Log("konekcija na gateway: " + gatewayadresa);
+
                         }
                         tekst.text = gatewayadresa;
                     }
