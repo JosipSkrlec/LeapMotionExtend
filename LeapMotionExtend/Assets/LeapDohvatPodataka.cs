@@ -38,20 +38,25 @@ public class LeapDohvatPodataka : MonoBehaviour
 
         Konekcija();
 
+        if (DesniLeap == false)
+        {
+            prvaCrta = false;
+        }
+
         if (DesniLeap == true)
         {
             if (prvaCrta == true)
             {
                 //pozicija
-                LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f);
-                // rotacija
+                LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f); // (0.098f, -0.011f, 0.021f);
+                //rotacija
                 LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
             }
             else
             {
                 //pozicija
-                LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f);
-                // rotacija
+                LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f); // (0.19f,-0.011f, 0.021f);
+                //rotacija
                 LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
             }
 
@@ -59,7 +64,7 @@ public class LeapDohvatPodataka : MonoBehaviour
         // lijevi leap
         else
         {
-            LeapHandController.transform.position = new Vector3(-0.21f,0.0f,0.0f);
+            LeapHandController.transform.position = new Vector3(-0.21f,0.0f,0.0f); // (-0.21f,0.0f,0.0f);
         }
 
         udpSend.Init();
@@ -134,8 +139,6 @@ public class LeapDohvatPodataka : MonoBehaviour
     public bool zgloboviObojani = true;
     private List<GameObject> zgloboviIKostiLeap = new List<GameObject>();
     private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
-
-
 
     List<float> HandToFloatArray(Leap.Hand h)
     {
@@ -312,6 +315,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             foreach (GameObject go in zgloboviIKosti)
             {
+                //System.GC.Collect();
                 Destroy(go);
             }
             zgloboviIKosti.Clear();
