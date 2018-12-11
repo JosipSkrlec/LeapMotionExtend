@@ -29,6 +29,7 @@ public class Taping : MonoBehaviour {
 
     private void Update()
     {
+        
         #region ZA VRIJEME
         Vrijeme += Time.deltaTime;
 
@@ -52,6 +53,7 @@ public class Taping : MonoBehaviour {
             else
             {
                 
+
                 GOVrijeme.GetComponent<TextMesh>().color = new Color(0.0f, 0.0f, 0.0f);
 
 
@@ -62,7 +64,7 @@ public class Taping : MonoBehaviour {
         }
         #endregion
 
-        #region SCORE
+        #region ZA SCORE
         if (check1 == true && check2 == true && pocetnovrijeme > 1)
         {
             pocetniScore += 0.5f;
@@ -72,6 +74,7 @@ public class Taping : MonoBehaviour {
             Taping.check2 = false;    
 
         }
+
         #endregion
 
 

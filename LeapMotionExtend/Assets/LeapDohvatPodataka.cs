@@ -700,6 +700,9 @@ public class LeapDohvatPodataka : MonoBehaviour
             
                 }
 
+
+
+
             }
 
             // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena
@@ -730,6 +733,7 @@ public class LeapDohvatPodataka : MonoBehaviour
             {
                 IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true);
             }
+
 
             // DRUGI UVJET ZA DESNE RUKE
             if (kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
