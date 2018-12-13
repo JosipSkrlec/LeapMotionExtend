@@ -17,7 +17,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 {
 
     float deltaTime = 0.0f;
-
+    GameObject GO;
 
     // ŠALJE IP = "10.0.1.27"; port = 60000;
     /*************************************************************************/
@@ -36,7 +36,10 @@ public class LeapDohvatPodataka : MonoBehaviour
     {
         leapProvider = FindObjectOfType<LeapServiceProvider>();
 
+        GO = new GameObject();
         Konekcija();
+
+        GORukeSetup();
 
         if (DesniLeap == false)
         {
@@ -70,6 +73,28 @@ public class LeapDohvatPodataka : MonoBehaviour
         udpSend.Init();
         udpReceive.Init();
     }
+
+    private void GORukeSetup()
+    {
+        GameObject LRT = new GameObject();
+        GameObject LRP = new GameObject();
+        GameObject DRT = new GameObject();
+        GameObject DRP = new GameObject();
+
+        LRT.name = "LRT";
+        //LRT.tag = "LRT";
+
+        LRP.name = "LRP";
+        //LRP.tag = "LRP";
+
+        DRT.name = "DRT";
+        //DRT.tag = "DRT";
+
+        DRP.name = "DRP";
+        //DRP.tag = "DRP";
+
+    }
+
 
     private void Konekcija()
     {
@@ -308,8 +333,11 @@ public class LeapDohvatPodataka : MonoBehaviour
         return hands;
     }
 
-    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
+    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData,string Check)
     {
+       // ovaj GO je game object pomocu kojeg se trezi check string u game(playmode) sceni kao GameObject , 4 vrste( LRT LRP DRT DRP)
+        GO = GameObject.Find(Check);
+
         if (zgloboviIKosti != null)
         {
 
@@ -353,7 +381,9 @@ public class LeapDohvatPodataka : MonoBehaviour
                 polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
                 polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                 zgloboviIKosti.Add(polozajDlana);
-
+                //dodano za odvojene dlanove
+                polozajDlana.transform.parent = GO.transform;
+                //
             }
 
             int i = 0;
@@ -366,6 +396,9 @@ public class LeapDohvatPodataka : MonoBehaviour
                 GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 k.transform.position = Leap2UnityVector(f.TipPosition);
                 k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+                //dodano za odvojene dlanove
+                k.transform.parent = GO.transform;
+                //
                 if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
 
                 zgloboviIKosti.Add(k);
@@ -379,6 +412,9 @@ public class LeapDohvatPodataka : MonoBehaviour
                     if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
                     zgloboviIKosti.Add(k);
                     k.name = "Zglob prethodni" + j;
+                    //dodano za odvojene dlanove
+                    k.transform.parent = GO.transform;
+                    //
 
                     if ((!prikaziKostiDlana) && (j == 0)) continue;
 
@@ -397,8 +433,11 @@ public class LeapDohvatPodataka : MonoBehaviour
 
                     k.name = "Kost " + j;
                     zgloboviIKosti.Add(k);
-                } // for
-            } // foreach finger
+                    //dodano za odvojene dlanove
+                    k.transform.parent = GO.transform;
+                    //
+                    } // for
+                } // foreach finger
            }
 
         }
@@ -726,24 +765,26 @@ public class LeapDohvatPodataka : MonoBehaviour
             // PRVI UVJET ZA LIJEVE RUKE
             if (kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
             {
-                IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true);
+                IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true,"LRT");
 
             }
             else if (KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
             {
-                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true);
+                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true,"LRP");
             }
 
 
             // DRUGI UVJET ZA DESNE RUKE
             if (kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
             {
-                IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true);
+                IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true,"DRT");
             }
             else if (KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
             {
-                IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true);
+                IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true,"DRP");
             }
+
+
 
         }
         else
