@@ -734,17 +734,15 @@ public class LeapDohvatPodataka : MonoBehaviour
                         kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 - h.PalmPosition.x;
                         //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
                         desnarukaposlani.Add(h);
-                    }
-                                            
+                    }                                          
             
                 }
 
-
-
-
             }
 
+
             // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena
+
             if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
             {
                 Izbrisi(zgloboviIKostiLeap);
@@ -753,6 +751,7 @@ public class LeapDohvatPodataka : MonoBehaviour
             {
                 Izbrisi(zgloboviIKostiPrimljeniPodaci);
             }
+
             //if (lijevarukatrenutni.Count != 0 || lijevarukaposlani.Count != 0)
             //{
             //    Izbrisi(zgloboviIKostiLeap);
@@ -765,33 +764,32 @@ public class LeapDohvatPodataka : MonoBehaviour
             // PRVI UVJET ZA LIJEVE RUKE
             if (kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
             {
-                IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true,"LRT");
+                IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true, "LRT");
 
             }
             else if (KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
             {
-                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true,"LRP");
+                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP");
             }
-
 
             // DRUGI UVJET ZA DESNE RUKE
             if (kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
             {
-                IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true,"DRT");
+                IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true, "DRT");
             }
             else if (KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
             {
-                IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true,"DRP");
+                IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true, "DRP");
             }
 
 
 
         }
-        else
-        {
-            // izvodi ukoliko je data == null tj. ukoliko konekcija nije uspostavljena
-            IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
-        }
+        //else
+        //{
+        //    // izvodi ukoliko je data == null tj. ukoliko konekcija nije uspostavljena
+        //    IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
+        //}
 
     } // Update
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku

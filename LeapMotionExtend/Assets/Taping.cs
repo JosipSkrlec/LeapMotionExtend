@@ -43,7 +43,7 @@ public class Taping : MonoBehaviour {
 
                 if (pocetnovrijeme < 10)
                 {
-                    GOVrijeme.GetComponent<TextMesh>().color = new Color(255.0f, 0.0f, 0.0f); // unity color picker!
+                    GOVrijeme.GetComponent<TextMesh>().color = new Color(255.0f,0.0f,0.0f); // unity color picker!
                 }
 
                 GOVrijeme.GetComponent<TextMesh>().text = TextVrijeme;
@@ -71,7 +71,7 @@ public class Taping : MonoBehaviour {
             scorezaprikaz = (int)pocetniScore;
             SCORE.GetComponent<TextMesh>().text = scorezaprikaz.ToString();
             Taping.check1 = false;
-            Taping.check2 = false;    
+            Taping.check2 = false;
 
         }
 
