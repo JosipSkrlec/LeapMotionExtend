@@ -33,7 +33,7 @@ public class LOPTICA : MonoBehaviour {
         {
             LOPTA.transform.position = new Vector3(LOPTA.transform.position.x, 0.4f, LOPTA.transform.position.z);
         }
-
+        
         // ZA SCORE
         if (LOPTA.transform.position.x < -0.57f)
         {
@@ -48,14 +48,5 @@ public class LOPTICA : MonoBehaviour {
             LIJEVI.GetComponent<TextMesh>().text = CRVENI.ToString();
         }
 
-
-
     }
-
-
-
-
-
-
-
 }
