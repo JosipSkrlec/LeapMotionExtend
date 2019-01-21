@@ -15,6 +15,8 @@ using UnityEngine.UI;
 
 public class LeapDohvatPodataka : MonoBehaviour
 {
+    // TODO - https://docs.unity3d.com/ScriptReference/Renderer-material.html pogledati (za punjenje memorije!) takoder pogledati unity profiler! Window- profiler
+    // Gfx.waitForPresent is like the CPU is waiting till the rendering process is finished.
 
     float deltaTime = 0.0f;
     GameObject GO;
@@ -41,34 +43,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 
         GORukeSetup();
 
-        if (DesniLeap == false)
-        {
-            prvaCrta = false;
-        }
-
-        if (DesniLeap == true)
-        {
-            if (prvaCrta == true)
-            {
-                //pozicija
-                LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f); // (0.098f, -0.011f, 0.021f);
-                //rotacija
-                LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
-            }
-            else
-            {
-                //pozicija
-                LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f); // (0.19f,-0.011f, 0.021f);
-                //rotacija
-                LeapHandController.transform.rotation = Quaternion.Euler(-3.107f, 0.0f, 0.0f);
-            }
-
-        }
-        // lijevi leap
-        else
-        {
-            LeapHandController.transform.position = new Vector3(-0.21f,0.0f,0.0f); // (-0.21f,0.0f,0.0f);
-        }
+        PostaviUdaljenost();
 
         udpSend.Init();
         udpReceive.Init();
@@ -93,6 +68,38 @@ public class LeapDohvatPodataka : MonoBehaviour
         DRP.name = "DRP";
         //DRP.tag = "DRP";
 
+    }
+
+    void PostaviUdaljenost()
+    {
+        if (DesniLeap == false)
+        {
+            prvaCrta = false;
+        }
+
+        if (DesniLeap == true)
+        {
+            if (prvaCrta == true)
+            {
+                //pozicija
+                LeapHandController.transform.position = new Vector3(0.098f, -0.011f, 0.021f); // (0.098f, -0.011f, 0.021f);
+                //rotacija
+                LeapHandController.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f); // (-3.107f, 0.0f, 0.0f);
+            }
+            else
+            {
+                //pozicija
+                LeapHandController.transform.position = new Vector3(0.19f, -0.011f, 0.021f); // (0.19f,-0.011f, 0.021f);
+                //rotacija
+                LeapHandController.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f); // (-3.107f, 0.0f, 0.0f);
+            }
+
+        }
+        // lijevi leap
+        else
+        {
+            LeapHandController.transform.position = new Vector3(-0.21f, 0.0f, 0.0f); // (-0.21f,0.0f,0.0f);
+        }
     }
 
 
@@ -163,6 +170,7 @@ public class LeapDohvatPodataka : MonoBehaviour
     public float debljinaPrstaNaspramZgloba = 0.8f;
     public bool zgloboviObojani = true;
     private List<GameObject> zgloboviIKostiLeap = new List<GameObject>();
+    private List<GameObject> zgloboviIKostiLeap1 = new List<GameObject>();
     private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
 
     List<float> HandToFloatArray(Leap.Hand h)
@@ -612,13 +620,19 @@ public class LeapDohvatPodataka : MonoBehaviour
     float kordinateIzPoslanihPodataka1 = 0.0f;
     float KordinateIzTrenutnogRacunala1 = 0.0f;
 
+    // za racunanje koordinata
+    List<float> ListaKoordinata = new List<float>();
+    float vrijemeodbrojavanja = 0.0f;
+    float rezultat = 0;
+    int brojackoordinata = 0;
+
     // Update is called once per frame
     private void Update()
     {
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
-        // refresh varijable na 10 pomocu kojih mjerimo udaljenost Palm-a
+        // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
         kordinateIzPoslanihPodataka = 5.0f;
         KordinateIzTrenutnogRacunala = 5.0f;
         kordinateIzPoslanihPodataka1 = 5.0f;
@@ -663,6 +677,8 @@ public class LeapDohvatPodataka : MonoBehaviour
             List<Hand> lijevarukaposlani = new List<Hand>();
             List<Hand> desnarukaposlani = new List<Hand>();
 
+            vrijemeodbrojavanja += Time.deltaTime;
+
             // hands podaci iz trenutnog racunala
             foreach (Hand hh in currentFrame.Hands)
             {
@@ -670,8 +686,9 @@ public class LeapDohvatPodataka : MonoBehaviour
                 {
                     if (DesniLeap == true)
                     {
-                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
+                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;    
                         //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
+                        ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
                         lijevarukatrenutni.Add(hh);
                     }
                     else
@@ -688,6 +705,7 @@ public class LeapDohvatPodataka : MonoBehaviour
                     {
                         KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 - hh.PalmPosition.x;
                         //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
+                        ListaKoordinata.Add(KordinateIzTrenutnogRacunala1);
                         desnarukatrenutni.Add(hh);
                     }
                     else
@@ -710,6 +728,7 @@ public class LeapDohvatPodataka : MonoBehaviour
                     {
                         kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
                         //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
+                        ListaKoordinata.Add(kordinateIzPoslanihPodataka);
                         lijevarukaposlani.Add(h);
                     }
                     else
@@ -726,6 +745,7 @@ public class LeapDohvatPodataka : MonoBehaviour
                     {
                         kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
                         //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+                        ListaKoordinata.Add(kordinateIzPoslanihPodataka1);
                         desnarukaposlani.Add(h);
 
                     }
@@ -739,10 +759,17 @@ public class LeapDohvatPodataka : MonoBehaviour
                 }
 
             }
+            // ovo je za koordinate tj. pronalazenje srednje koordinate od svih(i lijeve i desne) ucitanih proteklih 10 sec
+            //if (vrijemeodbrojavanja > 10)
+            //{
+            //    ProvjeraSrednjeKoordinatePrvaMetoda();
+            //}
+
+            ProvjeraSrednjeKoordinateLijeveRuke();
+            //ProvjeraSrednjeKoordinateDesneRuke();
 
 
-            // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena
-
+            // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena te se tako ruka ne zadrzava (freez-a) na sceni
             if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
             {
                 Izbrisi(zgloboviIKostiLeap);
@@ -752,46 +779,34 @@ public class LeapDohvatPodataka : MonoBehaviour
                 Izbrisi(zgloboviIKostiPrimljeniPodaci);
             }
 
-            //if (lijevarukatrenutni.Count != 0 || lijevarukaposlani.Count != 0)
-            //{
-            //    Izbrisi(zgloboviIKostiLeap);
-            //}
-            //if (desnarukatrenutni.Count != 0 || desnarukaposlani.Count != 0)
-            //{
-            //    Izbrisi(zgloboviIKostiPrimljeniPodaci);
-            //}
-
             // PRVI UVJET ZA LIJEVE RUKE
-            if (kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
+            if (kordinateIzPoslanihPodataka == 5.0f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
             {
                 IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true, "LRT");
-
             }
-            else if (KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
+            else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
             {
                 IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP");
             }
 
             // DRUGI UVJET ZA DESNE RUKE
-            if (kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
+            if (kordinateIzPoslanihPodataka1 == 5.0f || kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
             {
                 IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true, "DRT");
             }
-            else if (KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
+            else if (KordinateIzTrenutnogRacunala1 == 5.0f || KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
             {
                 IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true, "DRP");
             }
-
-
-
         }
         //else
         //{
         //    // izvodi ukoliko je data == null tj. ukoliko konekcija nije uspostavljena
-        //    IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
+        //    IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap1, true);
         //}
 
     } // Update
+
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku
     void Izbrisi(List<GameObject> zgloboviIKosti)
     {
@@ -807,6 +822,38 @@ public class LeapDohvatPodataka : MonoBehaviour
         }
 
     }
+
+    public void ProvjeraSrednjeKoordinatePrvaMetoda()
+    {
+        rezultat = 0;
+        foreach (float broj in ListaKoordinata)
+        {
+            rezultat += broj;
+            brojackoordinata++;
+        }
+
+        Debug.Log("Broj svih koordinata je " + (rezultat) + " te je uzeto u obzir " + (brojackoordinata) + " koordinata");
+        Debug.Log("Srednja koordinata proteklih 10 sekundi: " + (rezultat / brojackoordinata));
+        ListaKoordinata.Clear();
+        vrijemeodbrojavanja = 0.0f;
+    }
+
+    public void ProvjeraSrednjeKoordinateLijeveRuke()
+    {
+        float rezz = KordinateIzTrenutnogRacunala + kordinateIzPoslanihPodataka;
+        
+        Debug.Log("Srednja koordinata LIJEVE : " + (KordinateIzTrenutnogRacunala) +" + " + (kordinateIzPoslanihPodataka) + " /2 " + " = " + (rezz/2));
+
+    }
+
+    public void ProvjeraSrednjeKoordinateDesneRuke()
+    {
+        float rezzz = KordinateIzTrenutnogRacunala1 + kordinateIzPoslanihPodataka1;
+
+        Debug.Log("Srednja koordinata DESNE : " + (KordinateIzTrenutnogRacunala1) + " + " + (kordinateIzPoslanihPodataka1) + " /2 " + " = " + (rezzz / 2));
+
+    }
+
 
     /*************************************************************************/
 

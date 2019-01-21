@@ -24,6 +24,7 @@ public class LOPTICA : MonoBehaviour {
             LOPTA.transform.position = new Vector3(LOPTA.transform.position.x,LOPTA.transform.position.y,0.025f);
         }
 
+
         // ZA Y gore i Y dolje
         if (LOPTA.transform.position.y < 0.12f)
         {
@@ -33,20 +34,24 @@ public class LOPTICA : MonoBehaviour {
         {
             LOPTA.transform.position = new Vector3(LOPTA.transform.position.x, 0.4f, LOPTA.transform.position.z);
         }
-        
+
         // ZA SCORE
         if (LOPTA.transform.position.x < -0.57f)
         {
-            LOPTA.transform.position = new Vector3(-0.011f, LOPTA.transform.position.y, LOPTA.transform.position.z);
+            LOPTA.transform.position = new Vector3(0.15f, LOPTA.transform.position.y, LOPTA.transform.position.z);
             PLAVI += 1;
-            DESNI.GetComponent<TextMesh>().text = PLAVI.ToString();
+            DESNI.gameObject.GetComponent<TextMesh>().text = PLAVI.ToString();
+
         }
         if (LOPTA.transform.position.x > 0.36f)
         {
-            LOPTA.transform.position = new Vector3(-0.011f, LOPTA.transform.position.y, LOPTA.transform.position.z);
+            LOPTA.transform.position = new Vector3(0.15f, LOPTA.transform.position.y, LOPTA.transform.position.z);
             CRVENI += 1;
-            LIJEVI.GetComponent<TextMesh>().text = CRVENI.ToString();
+            LIJEVI.gameObject.GetComponent<TextMesh>().text = CRVENI.ToString();
+
         }
+
+
 
     }
 }

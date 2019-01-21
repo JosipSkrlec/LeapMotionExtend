@@ -287,6 +287,7 @@
     <Compile Include="Assets\Taping.cs" />
     <Compile Include="Assets\TapingDesni.cs" />
     <Compile Include="Assets\TapingLijevi.cs" />
+    <Compile Include="Assets\proba1.cs" />
     <Compile Include="Assets\trigger.cs" />
   </ItemGroup>
   <ItemGroup>
