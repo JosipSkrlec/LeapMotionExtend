@@ -34,6 +34,11 @@ public class LeapDohvatPodataka : MonoBehaviour
     public bool prvaCrta = true;
     public GameObject LeapHandController;
 
+    // za koordinate pracenje tj. mjerenje
+    public bool IspisivanjeKoordinataLijeveRuke;
+    public bool IspisivanjeKoordinataDesneRuke;
+    public bool IspisivanjeKoordinatadesetsec;
+
     private void Start()
     {
         leapProvider = FindObjectOfType<LeapServiceProvider>();
@@ -621,7 +626,7 @@ public class LeapDohvatPodataka : MonoBehaviour
     float KordinateIzTrenutnogRacunala1 = 0.0f;
 
     // za racunanje koordinata
-    List<float> ListaKoordinata = new List<float>();
+    static List<float> ListaKoordinata = new List<float>();
     float vrijemeodbrojavanja = 0.0f;
     float rezultat = 0;
     int brojackoordinata = 0;
@@ -705,7 +710,7 @@ public class LeapDohvatPodataka : MonoBehaviour
                     {
                         KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 - hh.PalmPosition.x;
                         //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
-                        ListaKoordinata.Add(KordinateIzTrenutnogRacunala1);
+                        //ListaKoordinata.Add(KordinateIzTrenutnogRacunala1);
                         desnarukatrenutni.Add(hh);
                     }
                     else
@@ -745,7 +750,7 @@ public class LeapDohvatPodataka : MonoBehaviour
                     {
                         kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
                         //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
-                        ListaKoordinata.Add(kordinateIzPoslanihPodataka1);
+                        //ListaKoordinata.Add(kordinateIzPoslanihPodataka1);
                         desnarukaposlani.Add(h);
 
                     }
@@ -760,13 +765,24 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             }
             // ovo je za koordinate tj. pronalazenje srednje koordinate od svih(i lijeve i desne) ucitanih proteklih 10 sec
-            //if (vrijemeodbrojavanja > 10)
-            //{
-            //    ProvjeraSrednjeKoordinatePrvaMetoda();
-            //}
 
-            ProvjeraSrednjeKoordinateLijeveRuke();
-            //ProvjeraSrednjeKoordinateDesneRuke();
+            if (IspisivanjeKoordinataLijeveRuke == true)
+            {
+                ProvjeraSrednjeKoordinateLijeveRuke();
+            }
+            if (IspisivanjeKoordinataDesneRuke == true)
+            {
+                ProvjeraSrednjeKoordinateDesneRuke();
+            }
+            if (IspisivanjeKoordinatadesetsec == true)
+            {
+                if (vrijemeodbrojavanja > 10)
+                {
+                    ProvjeraSrednjeKoordinatePrvaMetoda();
+                }
+
+            }
+
 
 
             // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena te se tako ruka ne zadrzava (freez-a) na sceni
@@ -834,7 +850,6 @@ public class LeapDohvatPodataka : MonoBehaviour
 
         Debug.Log("Broj svih koordinata je " + (rezultat) + " te je uzeto u obzir " + (brojackoordinata) + " koordinata");
         Debug.Log("Srednja koordinata proteklih 10 sekundi: " + (rezultat / brojackoordinata));
-        ListaKoordinata.Clear();
         vrijemeodbrojavanja = 0.0f;
     }
 
