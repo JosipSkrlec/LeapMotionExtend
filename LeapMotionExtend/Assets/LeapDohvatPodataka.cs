@@ -15,8 +15,10 @@ using UnityEngine.UI;
 
 public class LeapDohvatPodataka : MonoBehaviour
 {
-    // TODO - https://docs.unity3d.com/ScriptReference/Renderer-material.html pogledati (za punjenje memorije!) takoder pogledati unity profiler! Window- profiler
+    // za punjenje memorije, pogledati unity profiler za gfx...
     // Gfx.waitForPresent is like the CPU is waiting till the rendering process is finished.
+
+    // projekt je spreman na github https://github.com/JosipSkrlec/LeapMotionExtend .
 
     float deltaTime = 0.0f;
     GameObject GO;
@@ -27,14 +29,14 @@ public class LeapDohvatPodataka : MonoBehaviour
     UDPSend udpSend = new UDPSend();
     UDPReceive udpReceive = new UDPReceive();
 
-    // za prikaz konekcije (na koju ip adresu je konektiran)
+    // sljedece public varijable sluze za prikaz teksta tj. konekcije na sucelje tj canvas
     public Text tekst;
     public bool DesniLeap = true;
     public bool slanjePodataka = false;
     public bool prvaCrta = true;
     public GameObject LeapHandController;
 
-    // za koordinate pracenje tj. mjerenje
+    // sljedece public varijable sluze za kontrolu ispisivanja u debug-u unutar editora
     public bool IspisivanjeKoordinataLijeveRuke;
     public bool IspisivanjeKoordinataDesneRuke;
     public bool IspisivanjeKoordinatadesetsec;
@@ -46,6 +48,7 @@ public class LeapDohvatPodataka : MonoBehaviour
         GO = new GameObject();
         Konekcija();
 
+        // stvaranje 4 game objekta u kojem se spremaju objekti (pogledati metodu)
         GORukeSetup();
 
         PostaviUdaljenost();
@@ -54,6 +57,8 @@ public class LeapDohvatPodataka : MonoBehaviour
         udpReceive.Init();
     }
 
+    // Metoda stvara game objekte LRT = lijevarukatrenutni i LRP = lijevarukaposlani, sto znaci da se ucitana ruka iz trenutnog leap-a stvara unutar
+    // game objekta LRT da bi se lakše pratilo stanje u hierarchy
     private void GORukeSetup()
     {
         GameObject LRT = new GameObject();
@@ -75,6 +80,8 @@ public class LeapDohvatPodataka : MonoBehaviour
 
     }
 
+    // Udaljenost u virtualnom "svijetu" nije ista kao udaljenost u stvarnom, jer ukoliko se leap-ovi pomaknu u stvarnom
+    // tada je potrebno namijestiti LeapHandController po X osi jer u suprotnom ruke ce se stvarati na krivim mjestima
     void PostaviUdaljenost()
     {
         if (DesniLeap == false)
@@ -175,7 +182,7 @@ public class LeapDohvatPodataka : MonoBehaviour
     public float debljinaPrstaNaspramZgloba = 0.8f;
     public bool zgloboviObojani = true;
     private List<GameObject> zgloboviIKostiLeap = new List<GameObject>();
-    private List<GameObject> zgloboviIKostiLeap1 = new List<GameObject>();
+    private List<GameObject> w = new List<GameObject>();
     private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
 
     List<float> HandToFloatArray(Leap.Hand h)
@@ -346,6 +353,11 @@ public class LeapDohvatPodataka : MonoBehaviour
         return hands;
     }
 
+    /* 
+    Ova metoda je slicna kao i pocetna metoda od koje je ova modificirana IscrtajRuke(bez parametra Check)
+    Metoda provjerava od kud su ucitani podaci, ukoliko su od poslanih tada stvara ruku u LRP game objektu koji je prijasnje objasnjen kod start() metode
+
+    */
     void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData,string Check)
     {
        // ovaj GO je game object pomocu kojeg se trezi check string u game(playmode) sceni kao GameObject , 4 vrste( LRT LRP DRT DRP)
@@ -356,7 +368,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             foreach (GameObject go in zgloboviIKosti)
             {
-                //System.GC.Collect();
+                //System.GC.Collect(); // moze se ukljuciti dinamicki garbage collector koji oslobodi malo memorije ukoliko se gtx.waitforpresent povecava
                 Destroy(go);
             }
             zgloboviIKosti.Clear();
@@ -619,7 +631,7 @@ public class LeapDohvatPodataka : MonoBehaviour
         } // foreach finger
     } // metoda
 
-    // Varijable za mjesenje udaljenosti Palm-a
+    // Varijable za mjerenje udaljenosti Palm-a, te se varijable postavljaju na 5.0f
     float kordinateIzPoslanihPodataka = 0.0f;
     float KordinateIzTrenutnogRacunala = 0.0f;
     float kordinateIzPoslanihPodataka1 = 0.0f;
@@ -638,6 +650,7 @@ public class LeapDohvatPodataka : MonoBehaviour
         Frame currentFrame = leapProvider.CurrentFrame;
 
         // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
+        // varijable su postavljene na 5 jer lijeva strana leap-a je u - koordinati pa se tako od 5 oduzme -0.2578458 koordinata te se kasnije provjeri koja je blize
         kordinateIzPoslanihPodataka = 5.0f;
         KordinateIzTrenutnogRacunala = 5.0f;
         kordinateIzPoslanihPodataka1 = 5.0f;
@@ -684,6 +697,10 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             vrijemeodbrojavanja += Time.deltaTime;
 
+            // desni leap == true oznacava public varijablu koja se postavi u editoru kao checkbox, ona oznacava da li je leap senzor sa desne strane 
+            // il isa lijeve, mora se postaviti pravilno!
+            // unutar if(desniLeap == true) i else su koordinate sa - i +, - je jer ukoliko je desni leap tada je palmposition negativan te se tako oduzme od 
+            // 5.0f vrijednost koordinate koja kasnije sluzi da bi se odredila udaljenost i iscrtala pravilna ruka
             // hands podaci iz trenutnog racunala
             foreach (Hand hh in currentFrame.Hands)
             {
@@ -783,8 +800,6 @@ public class LeapDohvatPodataka : MonoBehaviour
 
             }
 
-
-
             // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena te se tako ruka ne zadrzava (freez-a) na sceni
             if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
             {
@@ -839,6 +854,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 
     }
 
+    // uzima koordinate te podijeli ukupan zbroj koordinata sa ukupnim brojem koordinata i ispisuje u debug line
     public void ProvjeraSrednjeKoordinatePrvaMetoda()
     {
         rezultat = 0;
@@ -853,6 +869,7 @@ public class LeapDohvatPodataka : MonoBehaviour
         vrijemeodbrojavanja = 0.0f;
     }
 
+    // metoda uzima samo lijeve ruke te ispisuje srednju koordinatu..
     public void ProvjeraSrednjeKoordinateLijeveRuke()
     {
         float rezz = KordinateIzTrenutnogRacunala + kordinateIzPoslanihPodataka;
@@ -861,6 +878,7 @@ public class LeapDohvatPodataka : MonoBehaviour
 
     }
 
+    // metoda uzima smao desne ruke te ipisuje srednju koordinatu
     public void ProvjeraSrednjeKoordinateDesneRuke()
     {
         float rezzz = KordinateIzTrenutnogRacunala1 + kordinateIzPoslanihPodataka1;

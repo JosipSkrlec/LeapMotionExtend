@@ -27,6 +27,9 @@ public class Taping : MonoBehaviour {
 
     }
 
+    // u update metodi se broji od 60 prema 0 te se provjerava svaki drugi doticaj "daske za taping". Klase TapingDesni i TapingLijevi su 
+    // na objektima "daske za taping" te postavljaju public varijable na true ukoliko se dotakne...
+    // nakon isteka vremena od 60 sec se ispise score na ekran korisnika.
     private void Update()
     {
         
