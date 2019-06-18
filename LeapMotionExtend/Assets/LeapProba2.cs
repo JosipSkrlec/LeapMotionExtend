@@ -1,6 +1,17 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using Leap;
+using Leap.Unity;
+using System;
+using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Net.NetworkInformation;
+using UnityEngine.UI;
 
 public class LeapProba2 : MonoBehaviour {
 
@@ -347,7 +358,11 @@ public class LeapProba2 : MonoBehaviour {
     Metoda provjerava od kud su ucitani podaci, ukoliko su od poslanih tada stvara ruku u LRP game objektu koji je prijasnje objasnjen kod start() metode
 
     */
-    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData, string Check)
+
+    Leap.Vector vektorpomocniLijeva = new Leap.Vector();
+    Leap.Vector vektorpomocniDesna = new Leap.Vector();
+
+    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData, string Check, Leap.Vector Lijeva, Leap.Vector Desna)
     {
         // ovaj GO je game object pomocu kojeg se trazi check string u game(playmode) sceni kao GameObject , 4 vrste( LRT LRP DRT DRP)
         GO = GameObject.Find(Check);
@@ -393,6 +408,8 @@ public class LeapProba2 : MonoBehaviour {
                     GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     // polozajDlana.transform.position = start;
                     polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
+                    vektorpomocniLijeva = hand.PalmPosition;
+                    vektorpomocniDesna = hand.PalmPosition;
                     polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     zgloboviIKosti.Add(polozajDlana);
                     //dodano za odvojene dlanove
@@ -809,7 +826,7 @@ public class LeapProba2 : MonoBehaviour {
             }
             else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
             {
-                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP");
+                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP"); // vektorpomocni dodati u metodu.
             }
 
             // DRUGI UVJET ZA DESNE RUKE
