@@ -301,6 +301,7 @@
     <Compile Include="Assets\LeapMotion\Modules\InteractionEngine\Scripts\Utility\InteractionControllerSwitcher.cs" />
     <Compile Include="Assets\LeapMotion\Modules\InteractionEngine\Scripts\Utility\KabschSolver.cs" />
     <Compile Include="Assets\LeapMotion\Modules\InteractionEngine\Scripts\Utility\PhysicsCallbacks.cs" />
+    <Compile Include="Assets\LeapProba2.cs" />
     <Compile Include="Assets\Taping.cs" />
     <Compile Include="Assets\TapingDesni.cs" />
     <Compile Include="Assets\TapingLijevi.cs" />

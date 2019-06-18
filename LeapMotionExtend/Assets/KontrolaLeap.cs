@@ -14,31 +14,25 @@ using System.Net.NetworkInformation;
 using UnityEngine.UI;
 
 public class KontrolaLeap : MonoBehaviour {
-    // za punjenje memorije, pogledati unity profiler za gfx...
-    // Gfx.waitForPresent is like the CPU is waiting till the rendering process is finished.
-
-    // projekt je spreman na github https://github.com/JosipSkrlec/LeapMotionExtend .
 
     float deltaTime = 0.0f;
-    GameObject GO;
 
-    // ŠALJE IP = "10.0.1.27"; port = 60000;
-    /*************************************************************************/
     private LeapServiceProvider leapProvider;
     UDPSend udpSend = new UDPSend();
     UDPReceive udpReceive = new UDPReceive();
 
+    public GameObject objekt1;
+
+    public GameObject LeapHandController;
     // sljedece public varijable sluze za prikaz teksta tj. konekcije na sucelje tj canvas
     public Text tekst;
     public bool DesniLeap = true;
-    public GameObject LeapHandController;
 
 
     private void Start()
     {
         leapProvider = FindObjectOfType<LeapServiceProvider>();
 
-        GO = new GameObject();
         Konekcija();
 
         udpSend.Init();
@@ -81,8 +75,7 @@ public class KontrolaLeap : MonoBehaviour {
                 }
             }//if
         }// foreach
-    }//metoda
-
+    }//metoda konekcija
 
     void OnGUI()
     {
@@ -106,14 +99,15 @@ public class KontrolaLeap : MonoBehaviour {
         return new Vector3(v.x, v.y, v.z);
     }
 
-    public float zglobVelicina = 0.015f;
-    public bool prikaziPolozajDlana = true;
-    public bool prikaziKostiDlana = false;
-    public float debljinaPrstaNaspramZgloba = 0.8f;
-    public bool zgloboviObojani = true;
+    //public float zglobVelicina = 0.015f;
+    //public bool prikaziPolozajDlana = true;
+    //public bool prikaziKostiDlana = false;
+    //public float debljinaPrstaNaspramZgloba = 0.8f;
+    //public bool zgloboviObojani = true;
+    //private List<GameObject> w = new List<GameObject>();
+    //private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
+
     private List<GameObject> zgloboviIKostiLeap = new List<GameObject>();
-    private List<GameObject> w = new List<GameObject>();
-    private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
 
     List<float> HandToFloatArray(Leap.Hand h)
     {
@@ -283,289 +277,19 @@ public class KontrolaLeap : MonoBehaviour {
         return hands;
     }
 
-    /* 
-    Ova metoda je slicna kao i pocetna metoda od koje je ova modificirana IscrtajRuke(bez parametra Check)
-    Metoda provjerava od kud su ucitani podaci, ukoliko su od poslanih tada stvara ruku u LRP game objektu koji je prijasnje objasnjen kod start() metode
-
-    */
-    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData, string Check)
-    {
-        // ovaj GO je game object pomocu kojeg se trazi check string u game(playmode) sceni kao GameObject , 4 vrste( LRT LRP DRT DRP)
-        GO = GameObject.Find(Check);
-
-        if (zgloboviIKosti != null)
-        {
-
-            foreach (GameObject go in zgloboviIKosti)
-            {
-                //System.GC.Collect(); // moze se ukljuciti dinamicki garbage collector koji oslobodi malo memorije ukoliko se gtx.waitforpresent povecava
-                Destroy(go);
-            }
-            zgloboviIKosti.Clear();
-
-        }
-
-        foreach (Hand hand in hands)
-        {
-            if (hand == hands[0])
-            {
-                //Debug.Log("check" + hand + hands[0]);
-                Color bojaZgloba;
-
-                if (!localData)
-                {
-                    // Podaci preko mreže s drugog LEAP uređaja --> PUNA BOJA
-
-                    bojaZgloba = hand.IsLeft ? Color.red : Color.blue;
-                }
-                else
-                {
-                    // Podaci s lokalnog uređaja priključenog na računalo
-
-                    // bojaZgloba = hand.IsLeft ? new Color(250, 128, 114) : new Color(65, 105, 225);
-                    bojaZgloba = hand.IsLeft ? new Color(0.98F, 0.5F, 0.44F) : new Color(0.25F, 0.41F, 0.88F);
-                    //bojaZgloba = hand.IsLeft ?  Color.red :  Color.blue;
-                }
-
-                // Iscrtavanje sfere (palm-a)
-                if (prikaziPolozajDlana)
-                {
-                    /* Iscrtavanje položaja dlana */
-                    GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    // polozajDlana.transform.position = start;
-                    polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-                    polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                    zgloboviIKosti.Add(polozajDlana);
-                    //dodano za odvojene dlanove
-                    polozajDlana.transform.parent = GO.transform;
-                    //
-                }
-
-                int i = 0;
-                // foreach (Finger f in hand.Fingers)
-                for (int e = 0; e < 5; e++)
-                {
-                    Finger f = hand.Fingers[e];
-
-                    // TYPE_THUMB = = 0 - TYPE_INDEX = = 1 - TYPE_MIDDLE = = 2 - TYPE_RING = = 3 - TYPE_PINKY = = 4 -
-                    GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    k.transform.position = Leap2UnityVector(f.TipPosition);
-                    k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                    //dodano za odvojene dlanove
-                    k.transform.parent = GO.transform;
-                    //
-                    if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-
-                    zgloboviIKosti.Add(k);
-                    k.name = "Vrh prsta " + i++;
-
-                    for (int j = 0; j < 4; j++)
-                    {
-                        k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                        k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                        if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-                        zgloboviIKosti.Add(k);
-                        k.name = "Zglob prethodni" + j;
-                        //dodano za odvojene dlanove
-                        k.transform.parent = GO.transform;
-                        //
-
-                        if ((!prikaziKostiDlana) && (j == 0)) continue;
-
-                        // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
-                        Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                        Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
-
-                        k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                        Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
-                        k.transform.position = pos;
-                        k.transform.up = nextJoint - prevJoint;
-
-                        float razdaljina = Vector3.Distance(prevJoint, nextJoint);
-                        k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
-
-                        k.name = "Kost " + j;
-                        zgloboviIKosti.Add(k);
-                        //dodano za odvojene dlanove
-                        k.transform.parent = GO.transform;
-                        //
-                    } // for
-                } // foreach finger
-            }
-
-        }
-    } // metoda
-
-    void IscrtajRuke(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
-    {
-
-        if (zgloboviIKosti != null)
-        {
-
-            foreach (GameObject go in zgloboviIKosti)
-            {
-                Destroy(go);
-            }
-            zgloboviIKosti.Clear();
-
-        }
-
-        foreach (Hand hand in hands)
-        {
-            Color bojaZgloba;
-
-            if (!localData)
-            {
-                // Podaci preko mreže s drugog LEAP uređaja --> PUNA BOJA
-
-                bojaZgloba = hand.IsLeft ? Color.red : Color.blue;
-            }
-            else
-            {
-                // Podaci s lokalnog uređaja priključenog na računalo
-
-                // bojaZgloba = hand.IsLeft ? new Color(250, 128, 114) : new Color(65, 105, 225);
-                bojaZgloba = hand.IsLeft ? new Color(0.98F, 0.5F, 0.44F) : new Color(0.25F, 0.41F, 0.88F);
-                //bojaZgloba = hand.IsLeft ?  Color.red :  Color.blue;
-            }
-
-            // Iscrtavanje sfere (palm-a)
-            if (prikaziPolozajDlana)
-            {
-                /* Iscrtavanje položaja dlana */
-                GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                // polozajDlana.transform.position = start;
-                polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-                polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                zgloboviIKosti.Add(polozajDlana);
-
-            }
-
-            int i = 0;
-            // foreach (Finger f in hand.Fingers)
-            for (int e = 0; e < 5; e++)
-            {
-                Finger f = hand.Fingers[e];
-
-                // TYPE_THUMB = = 0 - TYPE_INDEX = = 1 - TYPE_MIDDLE = = 2 - TYPE_RING = = 3 - TYPE_PINKY = = 4 -
-                GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                k.transform.position = Leap2UnityVector(f.TipPosition);
-                k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-
-                zgloboviIKosti.Add(k);
-                k.name = "Vrh prsta " + i++;
-
-                for (int j = 0; j < 4; j++)
-                {
-                    k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                    k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                    if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-                    zgloboviIKosti.Add(k);
-                    k.name = "Zglob prethodni" + j;
-
-                    if ((!prikaziKostiDlana) && (j == 0)) continue;
-
-                    // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
-                    Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                    Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
-
-                    k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                    Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
-                    k.transform.position = pos;
-                    k.transform.up = nextJoint - prevJoint;
-
-                    float razdaljina = Vector3.Distance(prevJoint, nextJoint);
-                    k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
-
-                    k.name = "Kost " + j;
-                    zgloboviIKosti.Add(k);
-                } // for
-            } // foreach finger
-        } // foreach hand
-    } // metoda
-
-    GameObject prosliPolozajDlana = null;
-
-
-    void IscrtajRuku(Hand hand, List<GameObject> zgloboviIKosti)
-    {
-        if (prosliPolozajDlana != null) Destroy(prosliPolozajDlana);
-
-
-        if (zgloboviIKosti != null)
-        {
-            foreach (GameObject go in zgloboviIKosti)
-            {
-                Destroy(go);
-            }
-            zgloboviIKosti.Clear();
-        }
-
-        if (prikaziPolozajDlana)
-        {
-            /* Iscrtavanje položaja dlana */
-            GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-            // polozajDlana.transform.position = start;
-            polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-            polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-            prosliPolozajDlana = polozajDlana;
-        }
-
-        int i = 0;
-        foreach (Finger f in hand.Fingers)
-        {
-            // TYPE_THUMB = = 0 -
-            // TYPE_INDEX = = 1 -
-            // TYPE_MIDDLE = = 2 -
-            // TYPE_RING = = 3 -
-            // TYPE_PINKY = = 4 -
-
-            GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            k.transform.position = Leap2UnityVector(f.TipPosition);
-            k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-            zgloboviIKosti.Add(k);
-            k.name = "Vrh prsta " + i++;
-
-            for (int j = 0; j < 4; j++)
-            {
-                k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                zgloboviIKosti.Add(k);
-                k.name = "Zglob prethodni" + j;
-
-                if ((!prikaziKostiDlana) && (j == 0)) continue;
-
-                // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
-                Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
-
-                k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
-                k.transform.position = pos;
-                k.transform.up = nextJoint - prevJoint;
-
-                float razdaljina = Vector3.Distance(prevJoint / 2, nextJoint / 2);
-                k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
-
-                k.name = "Kost " + j;
-                zgloboviIKosti.Add(k);
-            } // for
-        } // foreach finger
-    } // metoda
-
     // za racunanje koordinata
     static List<float> ListaKoordinata = new List<float>();
     float vrijemeodbrojavanja = 0.0f;
     float rezultat = 0;
     int brojackoordinata = 0;
+
+
+    float vrijeme = 0.0f;
+    Leap.Vector PocetniVektor = new Leap.Vector();
+    Leap.Vector NoviVektor1 = new Leap.Vector();
+    Vector3 NoviVektor = new Vector3();
+    bool jednom = false;
+    bool sredinajednom = false;
 
     // Update is called once per frame
     private void Update()
@@ -574,56 +298,129 @@ public class KontrolaLeap : MonoBehaviour {
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
-        //Dio kôda za slanje podataka
-        IFormatter formatterSend = new BinaryFormatter();
-        MemoryStream msSend = new MemoryStream();
-        formatterSend.Serialize(msSend, HandsToFloatArray(currentFrame.Hands));
-        byte[] bytePodaciRL = msSend.ToArray();
-        // salje na drugo racunalo
-        udpSend.sendBytes(bytePodaciRL);
-        // -- završetak dijela kôda za slanje podataka.
+        //IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
 
-        // Dio kôda za primanje podataka
-        float time1 = Time.realtimeSinceStartup;
-        byte[] data = udpReceive.ReceiveDataOnce();
-        float time2 = Time.realtimeSinceStartup;
+        //IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
 
-        if (data != null)
+        vrijeme += Time.deltaTime;
+        if (vrijeme >= 3.0f)
         {
-
-            IFormatter formatter = new BinaryFormatter();
-            MemoryStream ms = new MemoryStream(data);
-
-            List<float> dataReceived = (List<float>)formatter.Deserialize(ms);
-
-            List<Hand> hands = FloatArrayToHands(dataReceived, zgloboviIKostiPrimljeniPodaci); // zgloboviIKostiPrimljeniPodaci
-
-            // u listu se zapisuje samo jedna ruka od svakog leap-a
-            // Pokusaj sa Hand objektom a ne Listom, u tom slucaju fps drop-a
-            // lista Hand od trenutnih podatak sa leap-a
-            List<Hand> lijevarukatrenutni = new List<Hand>();
-            List<Hand> desnarukatrenutni = new List<Hand>();
-
-            // lista Hand od prenesenih podatak sa leap-a
-            List<Hand> lijevarukaposlani = new List<Hand>();
-            List<Hand> desnarukaposlani = new List<Hand>();
-
-            vrijemeodbrojavanja += Time.deltaTime;
-
-
-
-            // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena te se tako ruka ne zadrzava (freez-a) na sceni
-            if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
-            {
-                Izbrisi(zgloboviIKostiLeap);
-            }
-            if (desnarukatrenutni.Count == 0 || desnarukaposlani.Count == 0)
-            {
-                Izbrisi(zgloboviIKostiPrimljeniPodaci);
-            }
+            vrijeme = 0.0f;
+            IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
         }
 
     } // Update
+
+
+    void IscrtajRuke(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
+    {
+        foreach (Hand hand in hands)
+        {
+            if (hand.PalmPosition.x <= 0.003f && hand.PalmPosition.x >= 0.0025 && hand.PalmPosition.z <= 0.003f && hand.PalmPosition.z >= 0.0025 && jednom == false)
+            {
+                jednom = true;
+                PocetniVektor = hand.PalmPosition;
+            }
+            else
+            {
+                //GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                //polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
+
+                NoviVektor1 = hand.PalmPosition;
+
+                Vector3 vec = new Vector3((NoviVektor1.x - PocetniVektor.x)/2, (NoviVektor1.y - PocetniVektor.y) / 2, (NoviVektor1.z - PocetniVektor.z) / 2);
+
+                Debug.Log(PocetniVektor + " " + NoviVektor1 + " " + vec);
+
+                objekt1.transform.position = Leap2UnityVector(hand.PalmPosition);
+                objekt1.transform.SetParent(null);               
+                NoviVektor = objekt1.transform.position;
+
+                Debug.Log(Vector3.Distance(new Vector3(PocetniVektor.x, PocetniVektor.y, PocetniVektor.z), NoviVektor));
+
+                PocetniVektor.x = NoviVektor.x;
+                PocetniVektor.y = NoviVektor.y;
+                PocetniVektor.z = NoviVektor.z;
+
+                //polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                //zgloboviIKosti.Add(objekt1);
+            }
+
+
+            //Color bojaZgloba;
+
+            //if (!localData)
+            //{
+            //    // Podaci preko mreže s drugog LEAP uređaja --> PUNA BOJA
+
+            //    bojaZgloba = hand.IsLeft ? Color.red : Color.blue;
+            //}
+            //else
+            //{
+            //    // Podaci s lokalnog uređaja priključenog na računalo
+
+            //    // bojaZgloba = hand.IsLeft ? new Color(250, 128, 114) : new Color(65, 105, 225);
+            //    bojaZgloba = hand.IsLeft ? new Color(0.98F, 0.5F, 0.44F) : new Color(0.25F, 0.41F, 0.88F);
+            //    //bojaZgloba = hand.IsLeft ?  Color.red :  Color.blue;
+            //}
+
+            //// Iscrtavanje sfere (palm-a)
+            //if (prikaziPolozajDlana)
+            //{
+            //    /* Iscrtavanje položaja dlana */
+            //    GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //    // polozajDlana.transform.position = start;
+            //    polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
+            //    polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            //    zgloboviIKosti.Add(polozajDlana);
+
+            //}
+
+            //int i = 0;
+            //// foreach (Finger f in hand.Fingers)
+            //for (int e = 0; e < 5; e++)
+            //{
+            //    Finger f = hand.Fingers[e];
+
+            //    // TYPE_THUMB = = 0 - TYPE_INDEX = = 1 - TYPE_MIDDLE = = 2 - TYPE_RING = = 3 - TYPE_PINKY = = 4 -
+            //    GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //    k.transform.position = Leap2UnityVector(f.TipPosition);
+            //    k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+            //    if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
+
+            //    zgloboviIKosti.Add(k);
+            //    k.name = "Vrh prsta " + i++;
+
+            //    for (int j = 0; j < 4; j++)
+            //    {
+            //        k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //        k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
+            //        k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+            //        if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
+            //        zgloboviIKosti.Add(k);
+            //        k.name = "Zglob prethodni" + j;
+
+            //        if ((!prikaziKostiDlana) && (j == 0)) continue;
+
+            //        // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
+            //        Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
+            //        Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
+
+            //        k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+
+            //        Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
+            //        k.transform.position = pos;
+            //        k.transform.up = nextJoint - prevJoint;
+
+            //        float razdaljina = Vector3.Distance(prevJoint, nextJoint);
+            //        k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
+
+            //        k.name = "Kost " + j;
+            //        zgloboviIKosti.Add(k);
+            //    } // for
+            //} // foreach finger
+        } // foreach hand
+    } // metoda
 
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku tj kada se iscrtana ruka treba pobrisati da se iscrta ruka koja je blize tj. suprotna
     void Izbrisi(List<GameObject> zgloboviIKosti)
@@ -837,60 +634,7 @@ public class KontrolaLeap : MonoBehaviour {
         // init
         public void Init()
         {
-            // Endpunkt definieren, von dem die Nachrichten gesendet werden.
             print("UDPSend.init()");
-
-            // define
-            // IP = "127.0.0.1";
-
-            //string sHostName = Dns.GetHostName();
-            //IPHostEntry ipE = Dns.GetHostByName(sHostName);
-            //IPAddress[] IpA = ipE.AddressList;
-            //for (int i = 0; i < IpA.Length; i++)
-            //{
-            //    //Console.WriteLine("IP Address {0}: {1} ", i, IpA[i].ToString());
-            //    //IP = IpA.ToString();
-            //    Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"+ IpA[i].ToString());
-            //}
-
-            //IPHostEntry host;
-            //string localip = "?";
-            //host = Dns.GetHostEntry(Dns.GetHostName());
-
-            //foreach (IPAddress ip in host.AddressList)
-            //{
-            //    if (ip.AddressFamily.ToString() == "InterNetwork")
-            //    {
-            //        localip = ip.ToString();                    
-            //        Debug.Log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB:" + localip.ToString());
-            //    }
-
-
-            //}
-
-            //NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
-
-            //foreach (NetworkInterface adapter in adapters)
-            //{
-            //    IPInterfaceProperties adapterProperties = adapter.GetIPProperties();
-            //    GatewayIPAddressInformationCollection adresses = adapterProperties.GatewayAddresses;
-
-            //    Debug.Log("UUUUUUUUUUUUUUUUUUUUUU" + adresses.Count);
-
-
-            //    if (adresses.Count > 0)
-            //    {
-            //        foreach (GatewayIPAddressInformation adress in adresses)
-            //        {
-            //            Debug.Log("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG" + adress.Address.ToString());
-
-            //            IP = adress.Address.ToString();
-
-
-            //        }
-            //    }
-
-            //}
 
             string gatewayadresa = " ";
 
