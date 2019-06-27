@@ -283,7 +283,6 @@ public class KontrolaLeap : MonoBehaviour {
     float rezultat = 0;
     int brojackoordinata = 0;
 
-
     float vrijeme = 0.0f;
     Leap.Vector PocetniVektor = new Leap.Vector();
     Leap.Vector NoviVektor1 = new Leap.Vector();
@@ -298,16 +297,15 @@ public class KontrolaLeap : MonoBehaviour {
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
-        //IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
 
-        //IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
+        IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
 
-        vrijeme += Time.deltaTime;
-        if (vrijeme >= 3.0f)
-        {
-            vrijeme = 0.0f;
-            IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
-        }
+        //vrijeme += Time.deltaTime;
+        //if (vrijeme >= 3.0f)
+        //{
+        //    vrijeme = 0.0f;
+        //    IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap, true);
+        //}
 
     } // Update
 
@@ -323,8 +321,14 @@ public class KontrolaLeap : MonoBehaviour {
             }
             else
             {
-                //GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                //polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
+                // CREATE NEW
+                GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
+
+                polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                zgloboviIKosti.Add(objekt1);
+
+                // SAMO TRANSFORM
 
                 NoviVektor1 = hand.PalmPosition;
 
@@ -342,8 +346,7 @@ public class KontrolaLeap : MonoBehaviour {
                 PocetniVektor.y = NoviVektor.y;
                 PocetniVektor.z = NoviVektor.z;
 
-                //polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                //zgloboviIKosti.Add(objekt1);
+
             }
 
 

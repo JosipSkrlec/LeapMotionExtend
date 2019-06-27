@@ -13,10 +13,19 @@ using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using UnityEngine.UI;
 
-public class LeapProba2 : MonoBehaviour {
-
+public class KontrolaLeap2 : MonoBehaviour
+{
     // za punjenje memorije, pogledati unity profiler za gfx...
     // Gfx.waitForPresent is like the CPU is waiting till the rendering process is finished.
+
+    float vrijeme = 0.0f;
+    Leap.Vector PocetniVektor = new Leap.Vector();
+    Leap.Vector NoviVektor1 = new Leap.Vector();
+    Vector3 NoviVektor = new Vector3();
+    bool jednom = false;
+    bool sredinajednom = false;
+
+    public GameObject objekt1;
 
     // projekt je spreman na github https://github.com/JosipSkrlec/LeapMotionExtend .
 
@@ -55,6 +64,8 @@ public class LeapProba2 : MonoBehaviour {
 
         udpSend.Init();
         udpReceive.Init();
+
+        PocetniVektor = new Vector(0.0f, 0.0f, 0.0f);
     }
 
     // Metoda stvara game objekte LRT = lijevarukatrenutni i LRP = lijevarukaposlani, sto znaci da se ucitana ruka iz trenutnog leap-a stvara unutar
@@ -174,6 +185,11 @@ public class LeapProba2 : MonoBehaviour {
     private UnityEngine.Vector3 Leap2UnityVector(Leap.Vector v)
     {
         return new Vector3(v.x, v.y, v.z);
+    }
+
+    private Leap.Vector Leap2LeapVector(Vector3 v)
+    {
+        return new Leap.Vector(v.x, v.y, v.z);
     }
 
     public float zglobVelicina = 0.015f;
@@ -358,11 +374,7 @@ public class LeapProba2 : MonoBehaviour {
     Metoda provjerava od kud su ucitani podaci, ukoliko su od poslanih tada stvara ruku u LRP game objektu koji je prijasnje objasnjen kod start() metode
 
     */
-
-    Leap.Vector vektorpomocniLijeva = new Leap.Vector();
-    Leap.Vector vektorpomocniDesna = new Leap.Vector();
-
-    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData, string Check, Leap.Vector Lijeva, Leap.Vector Desna)
+    void IscrtajRukee(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData, string Check)
     {
         // ovaj GO je game object pomocu kojeg se trazi check string u game(playmode) sceni kao GameObject , 4 vrste( LRT LRP DRT DRP)
         GO = GameObject.Find(Check);
@@ -408,8 +420,6 @@ public class LeapProba2 : MonoBehaviour {
                     GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     // polozajDlana.transform.position = start;
                     polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-                    vektorpomocniLijeva = hand.PalmPosition;
-                    vektorpomocniDesna = hand.PalmPosition;
                     polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     zgloboviIKosti.Add(polozajDlana);
                     //dodano za odvojene dlanove
@@ -653,203 +663,347 @@ public class LeapProba2 : MonoBehaviour {
     // UPDATE
     // UPDATE
     // Update is called once per frame
+    //private void Update()
+    //{
+    //    deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
+    //    Frame currentFrame = leapProvider.CurrentFrame;
+
+    //    // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
+    //    // varijable su postavljene na 5 jer lijeva strana leap-a je u - koordinati pa se tako od 5 oduzme -0.2578458 koordinata te se kasnije provjeri koja je blize
+    //    kordinateIzPoslanihPodataka = 5.0f;
+    //    KordinateIzTrenutnogRacunala = 5.0f;
+    //    kordinateIzPoslanihPodataka1 = 5.0f;
+    //    KordinateIzTrenutnogRacunala1 = 5.0f;
+
+    //    if (slanjePodataka != false)
+    //    {
+
+    //        //Dio kôda za slanje podataka
+    //        IFormatter formatterSend = new BinaryFormatter();
+    //        MemoryStream msSend = new MemoryStream();
+    //        formatterSend.Serialize(msSend, HandsToFloatArray(currentFrame.Hands));
+    //        byte[] bytePodaciRL = msSend.ToArray();
+    //        // salje na drugo racunalo
+    //        udpSend.sendBytes(bytePodaciRL);
+    //        // -- završetak dijela kôda za slanje podataka.
+
+    //    }
+
+    //    // Dio kôda za primanje podataka
+    //    float time1 = Time.realtimeSinceStartup;
+    //    byte[] data = udpReceive.ReceiveDataOnce();
+    //    float time2 = Time.realtimeSinceStartup;
+
+    //    if (data != null)
+    //    {
+
+    //        IFormatter formatter = new BinaryFormatter();
+    //        MemoryStream ms = new MemoryStream(data);
+
+    //        List<float> dataReceived = (List<float>)formatter.Deserialize(ms);
+
+    //        List<Hand> hands = FloatArrayToHands(dataReceived, zgloboviIKostiPrimljeniPodaci); // zgloboviIKostiPrimljeniPodaci
+
+    //        // u listu se zapisuje samo jedna ruka od svakog leap-a
+    //        // Pokusaj sa Hand objektom a ne Listom, u tom slucaju fps drop-a
+    //        // lista Hand od trenutnih podatak sa leap-a
+    //        List<Hand> lijevarukatrenutni = new List<Hand>();
+    //        List<Hand> desnarukatrenutni = new List<Hand>();
+
+    //        // lista Hand od prenesenih podatak sa leap-a
+    //        List<Hand> lijevarukaposlani = new List<Hand>();
+    //        List<Hand> desnarukaposlani = new List<Hand>();
+
+    //        vrijemeodbrojavanja += Time.deltaTime;
+
+    //        // desni leap == true oznacava public varijablu koja se postavi u editoru kao checkbox, ona oznacava da li je leap senzor sa desne strane 
+    //        // il isa lijeve, mora se postaviti pravilno!
+    //        // unutar if(desniLeap == true) i else su koordinate sa - i +, - je jer ukoliko je desni leap tada je palmposition negativan te se tako oduzme od 
+    //        // 5.0f vrijednost koordinate koja kasnije sluzi da bi se odredila udaljenost i iscrtala pravilna ruka
+    //        // hands podaci iz trenutnog racunala
+    //        foreach (Hand hh in currentFrame.Hands)
+    //        {
+    //            if (hh.IsLeft)
+    //            {
+    //                if (DesniLeap == true)
+    //                {
+    //                    KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
+    //                    //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
+    //                    ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
+    //                    lijevarukatrenutni.Add(hh);
+    //                }
+    //                else
+    //                {
+    //                    KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala + hh.PalmPosition.x;
+    //                    //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
+    //                    lijevarukatrenutni.Add(hh);
+    //                }
+
+    //            }
+    //            else if (!hh.IsLeft)
+    //            {
+    //                if (DesniLeap == true)
+    //                {
+    //                    KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 - hh.PalmPosition.x;
+    //                    //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
+    //                    //ListaKoordinata.Add(KordinateIzTrenutnogRacunala1);
+    //                    desnarukatrenutni.Add(hh);
+    //                }
+    //                else
+    //                {
+    //                    KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 + hh.PalmPosition.x;
+    //                    //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
+    //                    desnarukatrenutni.Add(hh);
+    //                }
+
+    //            }
+
+    //        }
+
+    //        // hands podaci  iz poslanih podataka
+    //        foreach (Hand h in hands)
+    //        {
+    //            if (h.IsLeft)
+    //            {
+    //                if (DesniLeap == true)
+    //                {
+    //                    kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
+    //                    //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
+    //                    ListaKoordinata.Add(kordinateIzPoslanihPodataka);
+    //                    lijevarukaposlani.Add(h);
+    //                }
+    //                else
+    //                {
+    //                    kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka - h.PalmPosition.x;
+    //                    //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
+    //                    lijevarukaposlani.Add(h);
+    //                }
+
+    //            }
+    //            else if (!h.IsLeft)
+    //            {
+    //                if (DesniLeap == true)
+    //                {
+    //                    kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
+    //                    //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+    //                    //ListaKoordinata.Add(kordinateIzPoslanihPodataka1);
+    //                    desnarukaposlani.Add(h);
+
+    //                }
+    //                else
+    //                {
+    //                    kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 - h.PalmPosition.x;
+    //                    //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
+    //                    desnarukaposlani.Add(h);
+    //                }
+
+    //            }
+
+    //        }
+    //        // ovo je za koordinate tj. pronalazenje srednje koordinate od svih(i lijeve i desne) ucitanih proteklih 10 sec
+
+    //        if (IspisivanjeKoordinataLijeveRuke == true)
+    //        {
+    //            ProvjeraSrednjeKoordinateLijeveRuke();
+    //        }
+    //        if (IspisivanjeKoordinataDesneRuke == true)
+    //        {
+    //            ProvjeraSrednjeKoordinateDesneRuke();
+    //        }
+    //        if (IspisivanjeKoordinatadesetsec == true)
+    //        {
+    //            if (vrijemeodbrojavanja > 10)
+    //            {
+    //                ProvjeraSrednjeKoordinatePrvaMetoda();
+    //            }
+
+    //        }
+
+    //        // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena te se tako ruka ne zadrzava (freez-a) na sceni
+    //        if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
+    //        {
+    //            Izbrisi(zgloboviIKostiLeap);
+    //        }
+    //        if (desnarukatrenutni.Count == 0 || desnarukaposlani.Count == 0)
+    //        {
+    //            Izbrisi(zgloboviIKostiPrimljeniPodaci);
+    //        }
+
+    //        // PRVI UVJET ZA LIJEVE RUKE
+    //        if (kordinateIzPoslanihPodataka == 5.0f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
+    //        {
+    //            //IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true, "LRT");
+
+    //            IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+    //        }
+    //        else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
+    //        {
+    //            //IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP");
+
+    //            IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+    //        }
+
+    //        // DRUGI UVJET ZA DESNE RUKE
+    //        if (kordinateIzPoslanihPodataka1 == 5.0f || kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
+    //        {
+    //            //IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true, "DRT");
+
+    //            IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+    //        }
+    //        else if (KordinateIzTrenutnogRacunala1 == 5.0f || KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
+    //        {
+    //            //IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true, "DRP");
+
+    //            IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+    //        }
+    //    }
+    //    //else
+    //    //{
+    //    //    // izvodi ukoliko je data == null tj. ukoliko konekcija nije uspostavljena
+    //    //    IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap1, true);
+    //    //}
+
+    //} // Update
+
     private void Update()
     {
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
-        // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
-        // varijable su postavljene na 5 jer lijeva strana leap-a je u - koordinati pa se tako od 5 oduzme -0.2578458 koordinata te se kasnije provjeri koja je blize
-        kordinateIzPoslanihPodataka = 5.0f;
-        KordinateIzTrenutnogRacunala = 5.0f;
-        kordinateIzPoslanihPodataka1 = 5.0f;
-        KordinateIzTrenutnogRacunala1 = 5.0f;
-
-        if (slanjePodataka != false)
-        {
-
-            //Dio kôda za slanje podataka
-            IFormatter formatterSend = new BinaryFormatter();
-            MemoryStream msSend = new MemoryStream();
-            formatterSend.Serialize(msSend, HandsToFloatArray(currentFrame.Hands));
-            byte[] bytePodaciRL = msSend.ToArray();
-            // salje na drugo racunalo
-            udpSend.sendBytes(bytePodaciRL);
-            // -- završetak dijela kôda za slanje podataka.
-
-        }
-
-        // Dio kôda za primanje podataka
-        float time1 = Time.realtimeSinceStartup;
-        byte[] data = udpReceive.ReceiveDataOnce();
-        float time2 = Time.realtimeSinceStartup;
-
-        if (data != null)
-        {
-
-            IFormatter formatter = new BinaryFormatter();
-            MemoryStream ms = new MemoryStream(data);
-
-            List<float> dataReceived = (List<float>)formatter.Deserialize(ms);
-
-            List<Hand> hands = FloatArrayToHands(dataReceived, zgloboviIKostiPrimljeniPodaci); // zgloboviIKostiPrimljeniPodaci
-
-            // u listu se zapisuje samo jedna ruka od svakog leap-a
-            // Pokusaj sa Hand objektom a ne Listom, u tom slucaju fps drop-a
-            // lista Hand od trenutnih podatak sa leap-a
-            List<Hand> lijevarukatrenutni = new List<Hand>();
-            List<Hand> desnarukatrenutni = new List<Hand>();
-
-            // lista Hand od prenesenih podatak sa leap-a
-            List<Hand> lijevarukaposlani = new List<Hand>();
-            List<Hand> desnarukaposlani = new List<Hand>();
-
-            vrijemeodbrojavanja += Time.deltaTime;
-
-            // desni leap == true oznacava public varijablu koja se postavi u editoru kao checkbox, ona oznacava da li je leap senzor sa desne strane 
-            // il isa lijeve, mora se postaviti pravilno!
-            // unutar if(desniLeap == true) i else su koordinate sa - i +, - je jer ukoliko je desni leap tada je palmposition negativan te se tako oduzme od 
-            // 5.0f vrijednost koordinate koja kasnije sluzi da bi se odredila udaljenost i iscrtala pravilna ruka
-            // hands podaci iz trenutnog racunala
-            foreach (Hand hh in currentFrame.Hands)
-            {
-                if (hh.IsLeft)
-                {
-                    if (DesniLeap == true)
-                    {
-                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
-                        //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
-                        ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
-                        lijevarukatrenutni.Add(hh);
-                    }
-                    else
-                    {
-                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala + hh.PalmPosition.x;
-                        //Debug.Log("LIJEVA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala);
-                        lijevarukatrenutni.Add(hh);
-                    }
-
-                }
-                else if (!hh.IsLeft)
-                {
-                    if (DesniLeap == true)
-                    {
-                        KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 - hh.PalmPosition.x;
-                        //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
-                        //ListaKoordinata.Add(KordinateIzTrenutnogRacunala1);
-                        desnarukatrenutni.Add(hh);
-                    }
-                    else
-                    {
-                        KordinateIzTrenutnogRacunala1 = KordinateIzTrenutnogRacunala1 + hh.PalmPosition.x;
-                        //Debug.Log("DESNA ruka trenutni podaci: " + KordinateIzTrenutnogRacunala1);
-                        desnarukatrenutni.Add(hh);
-                    }
-
-                }
-
-            }
-
-            // hands podaci  iz poslanih podataka
-            foreach (Hand h in hands)
-            {
-                if (h.IsLeft)
-                {
-                    if (DesniLeap == true)
-                    {
-                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
-                        //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
-                        ListaKoordinata.Add(kordinateIzPoslanihPodataka);
-                        lijevarukaposlani.Add(h);
-                    }
-                    else
-                    {
-                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka - h.PalmPosition.x;
-                        //Debug.Log("LIJEVA ruka poslani podaci: " + kordinateIzPoslanihPodataka);
-                        lijevarukaposlani.Add(h);
-                    }
-
-                }
-                else if (!h.IsLeft)
-                {
-                    if (DesniLeap == true)
-                    {
-                        kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 + h.PalmPosition.x;
-                        //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
-                        //ListaKoordinata.Add(kordinateIzPoslanihPodataka1);
-                        desnarukaposlani.Add(h);
-
-                    }
-                    else
-                    {
-                        kordinateIzPoslanihPodataka1 = kordinateIzPoslanihPodataka1 - h.PalmPosition.x;
-                        //Debug.Log("DESNA ruka poslani podaci: " + kordinateIzPoslanihPodataka1);
-                        desnarukaposlani.Add(h);
-                    }
-
-                }
-
-            }
-            // ovo je za koordinate tj. pronalazenje srednje koordinate od svih(i lijeve i desne) ucitanih proteklih 10 sec
-
-            if (IspisivanjeKoordinataLijeveRuke == true)
-            {
-                ProvjeraSrednjeKoordinateLijeveRuke();
-            }
-            if (IspisivanjeKoordinataDesneRuke == true)
-            {
-                ProvjeraSrednjeKoordinateDesneRuke();
-            }
-            if (IspisivanjeKoordinatadesetsec == true)
-            {
-                if (vrijemeodbrojavanja > 10)
-                {
-                    ProvjeraSrednjeKoordinatePrvaMetoda();
-                }
-
-            }
-
-            // Popravak ukoliko leap ucita pogresnu ruku, izbrise ju iz liste u kojoj je bila spremljena te se tako ruka ne zadrzava (freez-a) na sceni
-            if (lijevarukatrenutni.Count == 0 || lijevarukaposlani.Count == 0)
-            {
-                Izbrisi(zgloboviIKostiLeap);
-            }
-            if (desnarukatrenutni.Count == 0 || desnarukaposlani.Count == 0)
-            {
-                Izbrisi(zgloboviIKostiPrimljeniPodaci);
-            }
-
-            // PRVI UVJET ZA LIJEVE RUKE
-            if (kordinateIzPoslanihPodataka == 5.0f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
-            {
-                IscrtajRukee(lijevarukatrenutni, zgloboviIKostiLeap, true, "LRT");
-            }
-            else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
-            {
-                IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP"); // vektorpomocni dodati u metodu.
-            }
-
-            // DRUGI UVJET ZA DESNE RUKE
-            if (kordinateIzPoslanihPodataka1 == 5.0f || kordinateIzPoslanihPodataka1 > KordinateIzTrenutnogRacunala1)
-            {
-                IscrtajRukee(desnarukatrenutni, zgloboviIKostiPrimljeniPodaci, true, "DRT");
-            }
-            else if (KordinateIzTrenutnogRacunala1 == 5.0f || KordinateIzTrenutnogRacunala1 > kordinateIzPoslanihPodataka1)
-            {
-                IscrtajRukee(desnarukaposlani, zgloboviIKostiPrimljeniPodaci, true, "DRP");
-            }
-        }
-        //else
-        //{
-        //    // izvodi ukoliko je data == null tj. ukoliko konekcija nije uspostavljena
-        //    IscrtajRuke(currentFrame.Hands, zgloboviIKostiLeap1, true);
-        //}
+        IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
 
     } // Update
 
+    Leap.Vector novi = new Leap.Vector();
+
+    void IscrtajRuke2(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
+    {
+        foreach (Hand hand in hands)
+        {
+            if (sredinajednom == false && hand.PalmPosition.x < 0.03f && hand.PalmPosition.x > 0.0f)
+            {
+                sredinajednom = true;
+
+                novi = Leap2LeapVector(objekt1.transform.localPosition);
+
+                objekt1.transform.position = new Vector3(hand.PalmPosition.x, hand.PalmPosition.y, hand.PalmPosition.z);
+               
+            }
+            if(sredinajednom == true)
+            {
+                KOORDINATA(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(novi));
+                novi = hand.PalmPosition;
+            }
+
+        }
+
+
+    }
+
+    void KOORDINATA(Vector3 TrenutneKoordinate, Vector3 ProsleKoordinate)
+    {
+        float NovaX = 0.0f;
+        float NovaY = 0.0f;
+        float NovaZ = 0.0f;
+
+        Vector3 TrenutneKoordinate2 = TrenutneKoordinate;
+
+        #region Pretvorba - u +
+        // trenutne
+        if (TrenutneKoordinate.x < 0.0f)
+        {
+            TrenutneKoordinate.x = (TrenutneKoordinate.x * -1);
+        }
+        if (TrenutneKoordinate.y < 0.0f)
+        {
+            TrenutneKoordinate.y = (TrenutneKoordinate.y * -1);
+        }
+        if (TrenutneKoordinate.z < 0.0f)
+        {
+            TrenutneKoordinate.z = (TrenutneKoordinate.z * -1);
+        }
+        // prijasnje
+        if (ProsleKoordinate.x < 0.0f)
+        {
+            ProsleKoordinate.x = (ProsleKoordinate.x * -1);
+        }
+        if (ProsleKoordinate.y < 0.0f)
+        {
+            ProsleKoordinate.y = (ProsleKoordinate.y * -1);
+        }
+        if (ProsleKoordinate.z < 0.0f)
+        {
+            ProsleKoordinate.z = (ProsleKoordinate.z * -1);
+        }
+        #endregion
+
+        #region Racunanje razlike koordinata
+        if (TrenutneKoordinate.x > ProsleKoordinate.x)
+        {
+            NovaX = TrenutneKoordinate.x - ProsleKoordinate.x; 
+        }
+        else
+        {
+            NovaX = ProsleKoordinate.x - TrenutneKoordinate.x;
+        }
+
+        if (TrenutneKoordinate.y > ProsleKoordinate.y)
+        {
+            NovaY = TrenutneKoordinate.y - ProsleKoordinate.y;
+        }
+        else
+        {
+            NovaY = ProsleKoordinate.y - TrenutneKoordinate.y;
+        }
+
+        if (TrenutneKoordinate.z > ProsleKoordinate.z)
+        {
+            NovaZ = TrenutneKoordinate.z - ProsleKoordinate.z;
+        }
+        else
+        {
+            NovaZ = ProsleKoordinate.z - TrenutneKoordinate.z;
+        }
+
+        #endregion
+
+        Vector3 trenutna = ProsleKoordinate;
+
+        #region Check
+        if (TrenutneKoordinate2.x < 0.0000f)
+        {
+            trenutna.x = trenutna.x + NovaX;
+        }
+        else
+        {
+            trenutna.x = trenutna.x + NovaX;
+        }
+
+        if (TrenutneKoordinate2.y < 0.0000f)
+        {
+            trenutna.y = trenutna.y + NovaY;
+        }
+        else
+        {
+            trenutna.y = trenutna.y + NovaY;
+        }
+
+        if (TrenutneKoordinate2.x < 0.0000f)
+        {
+            trenutna.z = trenutna.z + NovaZ;
+        }
+        else
+        {
+            trenutna.z = trenutna.z + NovaZ;
+        }
+        #endregion
+
+        objekt1.transform.position = trenutna;
+    }
+
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku tj kada se iscrtana ruka treba pobrisati da se iscrta ruka koja je blize tj. suprotna
     void Izbrisi(List<GameObject> zgloboviIKosti)
-    {
+        {
         if (zgloboviIKosti != null)
         {
 
@@ -1241,3 +1395,4 @@ public class LeapProba2 : MonoBehaviour {
 
 
 }
+
