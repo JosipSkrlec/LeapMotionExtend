@@ -50,6 +50,29 @@ public class KontrolaLeap2 : MonoBehaviour
     public bool IspisivanjeKoordinataDesneRuke;
     public bool IspisivanjeKoordinatadesetsec;
 
+    public float zglobVelicina = 0.015f;
+    public bool prikaziPolozajDlana = true;
+    public bool prikaziKostiDlana = false;
+    public float debljinaPrstaNaspramZgloba = 0.8f;
+    public bool zgloboviObojani = true;
+    private List<GameObject> zgloboviIKostiLeap = new List<GameObject>();
+    private List<GameObject> w = new List<GameObject>();
+    private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
+
+    GameObject prosliPolozajDlana = null;
+
+    // Varijable za mjerenje udaljenosti Palm-a, te se varijable postavljaju na 5.0f
+    float kordinateIzPoslanihPodataka = 0.0f;
+    float KordinateIzTrenutnogRacunala = 0.0f;
+    float kordinateIzPoslanihPodataka1 = 0.0f;
+    float KordinateIzTrenutnogRacunala1 = 0.0f;
+
+    // za racunanje koordinata
+    static List<float> ListaKoordinata = new List<float>();
+    float vrijemeodbrojavanja = 0.0f;
+    float rezultat = 0;
+    int brojackoordinata = 0;
+
     private void Start()
     {
         leapProvider = FindObjectOfType<LeapServiceProvider>();
@@ -60,7 +83,7 @@ public class KontrolaLeap2 : MonoBehaviour
         // stvaranje 4 game objekta u kojem se spremaju objekti (pogledati metodu)
         GORukeSetup();
 
-        PostaviUdaljenost();
+        //PostaviUdaljenost();
 
         udpSend.Init();
         udpReceive.Init();
@@ -186,71 +209,10 @@ public class KontrolaLeap2 : MonoBehaviour
     {
         return new Vector3(v.x, v.y, v.z);
     }
-
+   
     private Leap.Vector Leap2LeapVector(Vector3 v)
     {
         return new Leap.Vector(v.x, v.y, v.z);
-    }
-
-    public float zglobVelicina = 0.015f;
-    public bool prikaziPolozajDlana = true;
-    public bool prikaziKostiDlana = false;
-    public float debljinaPrstaNaspramZgloba = 0.8f;
-    public bool zgloboviObojani = true;
-    private List<GameObject> zgloboviIKostiLeap = new List<GameObject>();
-    private List<GameObject> w = new List<GameObject>();
-    private List<GameObject> zgloboviIKostiPrimljeniPodaci = new List<GameObject>();
-
-    List<float> HandToFloatArray(Leap.Hand h)
-    {
-        List<float> FloatArray = new List<float>();
-
-        for (int i = 0; i < 5; i++)
-        {
-            Finger f = h.Fingers[i];
-            // Debug.Log("PRST : " + f.ToString() + "indeks: " + i);
-
-            for (int j = 0; j < 4; j++)
-            {
-                // Debug.Log("Kost broj :" + j);
-                Bone b = f.Bone((Bone.BoneType)j);
-                Vector pJoint = b.PrevJoint;
-                Vector nJoint = b.NextJoint;
-
-                FloatArray.Add(pJoint.x);
-                FloatArray.Add(pJoint.y);
-                FloatArray.Add(pJoint.z);
-
-                FloatArray.Add(nJoint.x);
-                FloatArray.Add(nJoint.y);
-                FloatArray.Add(nJoint.z);
-            }
-        }
-        return FloatArray;
-    }
-
-    Leap.Hand FloatArrayToHand(List<float> FloatArray)
-    {
-
-        Leap.Hand h = new Leap.Hand();
-        int z = 0;
-
-        for (int i = 0; i < 5; i++)
-        {
-            Finger f = h.Fingers[i];
-            for (int j = 0; j < 4; j++)
-            {
-                Bone b = f.Bone((Bone.BoneType)j);
-
-                b.PrevJoint = new Vector(FloatArray[z], FloatArray[z + 1], FloatArray[z + 2]);
-                z += 3;
-
-                b.NextJoint = new Vector(FloatArray[z], FloatArray[z + 1], FloatArray[z + 2]);
-                z += 3;
-            }
-        }
-
-        return h;
     }
 
     List<float> HandsToFloatArray(List<Leap.Hand> hands)
@@ -484,183 +446,6 @@ public class KontrolaLeap2 : MonoBehaviour
         }
     } // metoda
 
-    void IscrtajRuke(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
-    {
-
-        if (zgloboviIKosti != null)
-        {
-
-            foreach (GameObject go in zgloboviIKosti)
-            {
-                Destroy(go);
-            }
-            zgloboviIKosti.Clear();
-
-        }
-
-        foreach (Hand hand in hands)
-        {
-            Color bojaZgloba;
-
-            if (!localData)
-            {
-                // Podaci preko mreže s drugog LEAP uređaja --> PUNA BOJA
-
-                bojaZgloba = hand.IsLeft ? Color.red : Color.blue;
-            }
-            else
-            {
-                // Podaci s lokalnog uređaja priključenog na računalo
-
-                // bojaZgloba = hand.IsLeft ? new Color(250, 128, 114) : new Color(65, 105, 225);
-                bojaZgloba = hand.IsLeft ? new Color(0.98F, 0.5F, 0.44F) : new Color(0.25F, 0.41F, 0.88F);
-                //bojaZgloba = hand.IsLeft ?  Color.red :  Color.blue;
-            }
-
-            // Iscrtavanje sfere (palm-a)
-            if (prikaziPolozajDlana)
-            {
-                /* Iscrtavanje položaja dlana */
-                GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                // polozajDlana.transform.position = start;
-                polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-                polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                zgloboviIKosti.Add(polozajDlana);
-
-            }
-
-            int i = 0;
-            // foreach (Finger f in hand.Fingers)
-            for (int e = 0; e < 5; e++)
-            {
-                Finger f = hand.Fingers[e];
-
-                // TYPE_THUMB = = 0 - TYPE_INDEX = = 1 - TYPE_MIDDLE = = 2 - TYPE_RING = = 3 - TYPE_PINKY = = 4 -
-                GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                k.transform.position = Leap2UnityVector(f.TipPosition);
-                k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-
-                zgloboviIKosti.Add(k);
-                k.name = "Vrh prsta " + i++;
-
-                for (int j = 0; j < 4; j++)
-                {
-                    k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                    k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                    if (zgloboviObojani) k.GetComponent<Renderer>().material.color = bojaZgloba;
-                    zgloboviIKosti.Add(k);
-                    k.name = "Zglob prethodni" + j;
-
-                    if ((!prikaziKostiDlana) && (j == 0)) continue;
-
-                    // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
-                    Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                    Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
-
-                    k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                    Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
-                    k.transform.position = pos;
-                    k.transform.up = nextJoint - prevJoint;
-
-                    float razdaljina = Vector3.Distance(prevJoint, nextJoint);
-                    k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
-
-                    k.name = "Kost " + j;
-                    zgloboviIKosti.Add(k);
-                } // for
-            } // foreach finger
-        } // foreach hand
-    } // metoda
-
-    GameObject prosliPolozajDlana = null;
-
-
-    void IscrtajRuku(Hand hand, List<GameObject> zgloboviIKosti)
-    {
-        if (prosliPolozajDlana != null) Destroy(prosliPolozajDlana);
-
-
-        if (zgloboviIKosti != null)
-        {
-            foreach (GameObject go in zgloboviIKosti)
-            {
-                Destroy(go);
-            }
-            zgloboviIKosti.Clear();
-        }
-
-        if (prikaziPolozajDlana)
-        {
-            /* Iscrtavanje položaja dlana */
-            GameObject polozajDlana = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-            // polozajDlana.transform.position = start;
-            polozajDlana.transform.position = Leap2UnityVector(hand.PalmPosition);
-            polozajDlana.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-            prosliPolozajDlana = polozajDlana;
-        }
-
-        int i = 0;
-        foreach (Finger f in hand.Fingers)
-        {
-            // TYPE_THUMB = = 0 -
-            // TYPE_INDEX = = 1 -
-            // TYPE_MIDDLE = = 2 -
-            // TYPE_RING = = 3 -
-            // TYPE_PINKY = = 4 -
-
-            GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            k.transform.position = Leap2UnityVector(f.TipPosition);
-            k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-            zgloboviIKosti.Add(k);
-            k.name = "Vrh prsta " + i++;
-
-            for (int j = 0; j < 4; j++)
-            {
-                k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                k.transform.position = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-                zgloboviIKosti.Add(k);
-                k.name = "Zglob prethodni" + j;
-
-                if ((!prikaziKostiDlana) && (j == 0)) continue;
-
-                // https://forum.unity.com/threads/draw-cylinder-between-2-points.23510/
-                Vector3 prevJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).PrevJoint);
-                Vector3 nextJoint = Leap2UnityVector(f.Bone((Bone.BoneType)j).NextJoint);
-
-                k = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-
-                Vector3 pos = Vector3.Lerp(prevJoint, nextJoint, (float)0.5);
-                k.transform.position = pos;
-                k.transform.up = nextJoint - prevJoint;
-
-                float razdaljina = Vector3.Distance(prevJoint / 2, nextJoint / 2);
-                k.transform.localScale = new Vector3(zglobVelicina * debljinaPrstaNaspramZgloba, razdaljina / 2, zglobVelicina * debljinaPrstaNaspramZgloba);
-
-                k.name = "Kost " + j;
-                zgloboviIKosti.Add(k);
-            } // for
-        } // foreach finger
-    } // metoda
-
-    // Varijable za mjerenje udaljenosti Palm-a, te se varijable postavljaju na 5.0f
-    float kordinateIzPoslanihPodataka = 0.0f;
-    float KordinateIzTrenutnogRacunala = 0.0f;
-    float kordinateIzPoslanihPodataka1 = 0.0f;
-    float KordinateIzTrenutnogRacunala1 = 0.0f;
-
-    // za racunanje koordinata
-    static List<float> ListaKoordinata = new List<float>();
-    float vrijemeodbrojavanja = 0.0f;
-    float rezultat = 0;
-    int brojackoordinata = 0;
-
-    // UPDATE
-    // UPDATE
     // UPDATE
     // Update is called once per frame
     //private void Update()
@@ -870,14 +655,112 @@ public class KontrolaLeap2 : MonoBehaviour
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
-        IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+        // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
+        // varijable su postavljene na 5 jer lijeva strana leap-a je u - koordinati pa se tako od 5 oduzme -0.2578458 koordinata te se kasnije provjeri koja je blize
+        kordinateIzPoslanihPodataka = 5.0f;
+        KordinateIzTrenutnogRacunala = 5.0f;
+        kordinateIzPoslanihPodataka1 = 5.0f;
+        KordinateIzTrenutnogRacunala1 = 5.0f;
+
+        if (slanjePodataka != false)
+        {
+
+            //Dio kôda za slanje podataka
+            IFormatter formatterSend = new BinaryFormatter();
+            MemoryStream msSend = new MemoryStream();
+            formatterSend.Serialize(msSend, HandsToFloatArray(currentFrame.Hands));
+            byte[] bytePodaciRL = msSend.ToArray();
+            // salje na drugo racunalo
+            udpSend.sendBytes(bytePodaciRL);
+            // -- završetak dijela kôda za slanje podataka.
+
+        }
+
+        // Dio kôda za primanje podataka
+        float time1 = Time.realtimeSinceStartup;
+        byte[] data = udpReceive.ReceiveDataOnce();
+        float time2 = Time.realtimeSinceStartup;
+
+        if (data != null)
+        {
+
+            IFormatter formatter = new BinaryFormatter();
+            MemoryStream ms = new MemoryStream(data);
+
+            List<float> dataReceived = (List<float>)formatter.Deserialize(ms);
+
+            List<Hand> hands = FloatArrayToHands(dataReceived, zgloboviIKostiPrimljeniPodaci);
+
+            List<Hand> lijevarukatrenutni = new List<Hand>();
+            List<Hand> lijevarukaposlani = new List<Hand>();
+
+            vrijemeodbrojavanja += Time.deltaTime;
+
+            foreach (Hand hh in currentFrame.Hands)
+            {
+                if (hh.IsLeft)
+                {
+                    if (DesniLeap == true)
+                    {
+                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
+                        Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
+                        ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
+                    }
+                    else
+                    {
+                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala + hh.PalmPosition.x;
+                        //Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
+                    }
+
+                }
+                // nedostaje za desnu
+
+            }
+
+            // hands podaci  iz poslanih podataka
+            foreach (Hand h in hands)
+            {
+                if (h.IsLeft)
+                {
+                    if (DesniLeap == true)
+                    {
+                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
+                        Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
+                        ListaKoordinata.Add(kordinateIzPoslanihPodataka);
+                    }
+                    else
+                    {
+                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka - h.PalmPosition.x;
+                        //Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
+                    }
+
+                }
+                // nedostaje za desnu
+
+            }
+
+
+            // PRVI UVJET ZA LIJEVE RUKE
+            if (kordinateIzPoslanihPodataka == 5.0f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
+            { 
+                IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+            }
+            else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
+            {
+                //IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP");
+                IscrtajRuke2(hands, zgloboviIKostiLeap, false);
+            }
+
+        }
 
     } // Update
 
+    // TODO - varijable staviti gore nakon sto se napravi potrebno
     Leap.Vector novi = new Leap.Vector();
 
     void IscrtajRuke2(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
+
         foreach (Hand hand in hands)
         {
             if (sredinajednom == false && hand.PalmPosition.x < 0.03f && hand.PalmPosition.x > 0.0f)
@@ -891,7 +774,7 @@ public class KontrolaLeap2 : MonoBehaviour
             }
             if(sredinajednom == true)
             {
-                KOORDINATA(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(novi));
+                KOORDINATA(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(novi), localData);
                 novi = hand.PalmPosition;
             }
 
@@ -900,105 +783,219 @@ public class KontrolaLeap2 : MonoBehaviour
 
     }
 
-    void KOORDINATA(Vector3 TrenutneKoordinate, Vector3 ProsleKoordinate)
+    void KOORDINATA(Vector3 TrenutneKoordinate, Vector3 ProsleKoordinate, bool localData)
     {
         float NovaX = 0.0f;
         float NovaY = 0.0f;
         float NovaZ = 0.0f;
 
-        Vector3 TrenutneKoordinate2 = TrenutneKoordinate;
+        if (localData == true)
+        {
+            Vector3 TrenutneKoordinate2 = new Vector3(TrenutneKoordinate.x, TrenutneKoordinate.y, TrenutneKoordinate.z);
+            Vector3 trenutna = new Vector3(ProsleKoordinate.x, ProsleKoordinate.y, ProsleKoordinate.z);
 
-        #region Pretvorba - u +
-        // trenutne
-        if (TrenutneKoordinate.x < 0.0f)
-        {
-            TrenutneKoordinate.x = (TrenutneKoordinate.x * -1);
-        }
-        if (TrenutneKoordinate.y < 0.0f)
-        {
-            TrenutneKoordinate.y = (TrenutneKoordinate.y * -1);
-        }
-        if (TrenutneKoordinate.z < 0.0f)
-        {
-            TrenutneKoordinate.z = (TrenutneKoordinate.z * -1);
-        }
-        // prijasnje
-        if (ProsleKoordinate.x < 0.0f)
-        {
-            ProsleKoordinate.x = (ProsleKoordinate.x * -1);
-        }
-        if (ProsleKoordinate.y < 0.0f)
-        {
-            ProsleKoordinate.y = (ProsleKoordinate.y * -1);
-        }
-        if (ProsleKoordinate.z < 0.0f)
-        {
-            ProsleKoordinate.z = (ProsleKoordinate.z * -1);
-        }
-        #endregion
+            #region Pretvorba - u +
+            // trenutne koordinate iz hand-a
+            if (TrenutneKoordinate.x < 0.0f)
+            {
+                TrenutneKoordinate.x = (TrenutneKoordinate.x * -1);
+            }
+            if (TrenutneKoordinate.y < 0.0f)
+            {
+                TrenutneKoordinate.y = (TrenutneKoordinate.y * -1);
+            }
+            if (TrenutneKoordinate.z < 0.0f)
+            {
+                TrenutneKoordinate.z = (TrenutneKoordinate.z * -1);
+            }
+            // prosle koordinate
+            if (ProsleKoordinate.x < 0.0f)
+            {
+                ProsleKoordinate.x = (ProsleKoordinate.x * -1);
+            }
+            if (ProsleKoordinate.y < 0.0f)
+            {
+                ProsleKoordinate.y = (ProsleKoordinate.y * -1);
+            }
+            if (ProsleKoordinate.z < 0.0f)
+            {
+                ProsleKoordinate.z = (ProsleKoordinate.z * -1);
+            }
+            #endregion
 
-        #region Racunanje razlike koordinata
-        if (TrenutneKoordinate.x > ProsleKoordinate.x)
-        {
-            NovaX = TrenutneKoordinate.x - ProsleKoordinate.x; 
+            #region Racunanje razlike koordinata
+            if (TrenutneKoordinate.x > ProsleKoordinate.x)
+            {
+                NovaX = TrenutneKoordinate.x - ProsleKoordinate.x;
+            }
+            else
+            {
+                NovaX = ProsleKoordinate.x - TrenutneKoordinate.x;
+            }
+
+            if (TrenutneKoordinate.y > ProsleKoordinate.y)
+            {
+                NovaY = TrenutneKoordinate.y - ProsleKoordinate.y;
+            }
+            else
+            {
+                NovaY = ProsleKoordinate.y - TrenutneKoordinate.y;
+            }
+
+            if (TrenutneKoordinate.z > ProsleKoordinate.z)
+            {
+                NovaZ = TrenutneKoordinate.z - ProsleKoordinate.z;
+            }
+            else
+            {
+                NovaZ = ProsleKoordinate.z - TrenutneKoordinate.z;
+            }
+
+            #endregion
+
+
+            //Debug.Log(trenutna + " " + ProsleKoordinate);
+
+            #region Check
+            if (TrenutneKoordinate2.x < 0.0000f)
+            {
+                trenutna.x = trenutna.x - NovaX;
+            }
+            else
+            {
+                trenutna.x = trenutna.x - NovaX;
+            }
+
+            if (TrenutneKoordinate2.y < 0.0000f)
+            {
+                trenutna.y = trenutna.y - NovaY;
+            }
+            else
+            {
+                trenutna.y = trenutna.y - NovaY;
+            }
+
+            if (TrenutneKoordinate2.x < 0.0000f)
+            {
+                trenutna.z = trenutna.z - NovaZ;
+            }
+            else
+            {
+                trenutna.z = trenutna.z - NovaZ;
+            }
+            #endregion
+
+            //Debug.Log("TRENUTNI = " + trenutna);
+
+            objekt1.transform.position = trenutna;
         }
         else
         {
-            NovaX = ProsleKoordinate.x - TrenutneKoordinate.x;
+            Vector3 TrenutneKoordinate2 = new Vector3(TrenutneKoordinate.x, TrenutneKoordinate.y, TrenutneKoordinate.z);
+            Vector3 trenutna = new Vector3(ProsleKoordinate.x, ProsleKoordinate.y, ProsleKoordinate.z);
+
+            #region Pretvorba - u +
+            // trenutne koordinate iz hand-a
+            if (TrenutneKoordinate.x < 0.0f)
+            {
+                TrenutneKoordinate.x = (TrenutneKoordinate.x * -1);
+            }
+            if (TrenutneKoordinate.y < 0.0f)
+            {
+                TrenutneKoordinate.y = (TrenutneKoordinate.y * -1);
+            }
+            if (TrenutneKoordinate.z < 0.0f)
+            {
+                TrenutneKoordinate.z = (TrenutneKoordinate.z * -1);
+            }
+            // prosle koordinate
+            if (ProsleKoordinate.x < 0.0f)
+            {
+                ProsleKoordinate.x = (ProsleKoordinate.x * -1);
+            }
+            if (ProsleKoordinate.y < 0.0f)
+            {
+                ProsleKoordinate.y = (ProsleKoordinate.y * -1);
+            }
+            if (ProsleKoordinate.z < 0.0f)
+            {
+                ProsleKoordinate.z = (ProsleKoordinate.z * -1);
+            }
+            #endregion
+
+            #region Racunanje razlike koordinata
+            if (TrenutneKoordinate.x > ProsleKoordinate.x)
+            {
+                NovaX = TrenutneKoordinate.x - ProsleKoordinate.x;
+            }
+            else
+            {
+                NovaX = ProsleKoordinate.x - TrenutneKoordinate.x;
+            }
+
+            if (TrenutneKoordinate.y > ProsleKoordinate.y)
+            {
+                NovaY = TrenutneKoordinate.y - ProsleKoordinate.y;
+            }
+            else
+            {
+                NovaY = ProsleKoordinate.y - TrenutneKoordinate.y;
+            }
+
+            if (TrenutneKoordinate.z > ProsleKoordinate.z)
+            {
+                NovaZ = TrenutneKoordinate.z - ProsleKoordinate.z;
+            }
+            else
+            {
+                NovaZ = ProsleKoordinate.z - TrenutneKoordinate.z;
+            }
+
+            #endregion
+
+
+            //Debug.Log(trenutna + " " + ProsleKoordinate);
+
+            #region Check
+            if (TrenutneKoordinate2.x < 0.0000f)
+            {
+                trenutna.x = trenutna.x + NovaX;
+            }
+            else
+            {
+                trenutna.x = trenutna.x + NovaX;
+            }
+
+            if (TrenutneKoordinate2.y < 0.0000f)
+            {
+                trenutna.y = trenutna.y + NovaY;
+            }
+            else
+            {
+                trenutna.y = trenutna.y + NovaY;
+            }
+
+            if (TrenutneKoordinate2.x < 0.0000f)
+            {
+                trenutna.z = trenutna.z + NovaZ;
+            }
+            else
+            {
+                trenutna.z = trenutna.z + NovaZ;
+            }
+            #endregion
+
+            if (trenutna.x > 0.0000f)
+            {
+                trenutna = new Vector3(trenutna.x * -1, trenutna.y, trenutna.z);
+            }
+            //Debug.Log("POSLANI = " + trenutna);
+
+
+            objekt1.transform.position = trenutna;
         }
 
-        if (TrenutneKoordinate.y > ProsleKoordinate.y)
-        {
-            NovaY = TrenutneKoordinate.y - ProsleKoordinate.y;
-        }
-        else
-        {
-            NovaY = ProsleKoordinate.y - TrenutneKoordinate.y;
-        }
 
-        if (TrenutneKoordinate.z > ProsleKoordinate.z)
-        {
-            NovaZ = TrenutneKoordinate.z - ProsleKoordinate.z;
-        }
-        else
-        {
-            NovaZ = ProsleKoordinate.z - TrenutneKoordinate.z;
-        }
-
-        #endregion
-
-        Vector3 trenutna = ProsleKoordinate;
-
-        #region Check
-        if (TrenutneKoordinate2.x < 0.0000f)
-        {
-            trenutna.x = trenutna.x + NovaX;
-        }
-        else
-        {
-            trenutna.x = trenutna.x + NovaX;
-        }
-
-        if (TrenutneKoordinate2.y < 0.0000f)
-        {
-            trenutna.y = trenutna.y + NovaY;
-        }
-        else
-        {
-            trenutna.y = trenutna.y + NovaY;
-        }
-
-        if (TrenutneKoordinate2.x < 0.0000f)
-        {
-            trenutna.z = trenutna.z + NovaZ;
-        }
-        else
-        {
-            trenutna.z = trenutna.z + NovaZ;
-        }
-        #endregion
-
-        objekt1.transform.position = trenutna;
     }
 
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku tj kada se iscrtana ruka treba pobrisati da se iscrta ruka koja je blize tj. suprotna
@@ -1016,40 +1013,6 @@ public class KontrolaLeap2 : MonoBehaviour
         }
 
     }
-
-    // uzima koordinate te podijeli ukupan zbroj koordinata sa ukupnim brojem koordinata i ispisuje u debug line
-    public void ProvjeraSrednjeKoordinatePrvaMetoda()
-    {
-        rezultat = 0;
-        foreach (float broj in ListaKoordinata)
-        {
-            rezultat += broj;
-            brojackoordinata++;
-        }
-
-        //Debug.Log("Broj svih koordinata je " + (rezultat) + " te je uzeto u obzir " + (brojackoordinata) + " koordinata");
-        //Debug.Log("Srednja koordinata proteklih 10 sekundi: " + (rezultat / brojackoordinata));
-        vrijemeodbrojavanja = 0.0f;
-    }
-
-    // metoda uzima samo lijeve ruke te ispisuje srednju koordinatu..
-    public void ProvjeraSrednjeKoordinateLijeveRuke()
-    {
-        float rezz = KordinateIzTrenutnogRacunala + kordinateIzPoslanihPodataka;
-
-        //Debug.Log("Srednja koordinata LIJEVE : " + (KordinateIzTrenutnogRacunala) +" + " + (kordinateIzPoslanihPodataka) + " /2 " + " = " + (rezz/2));
-
-    }
-
-    // metoda uzima smao desne ruke te ipisuje srednju koordinatu
-    public void ProvjeraSrednjeKoordinateDesneRuke()
-    {
-        float rezzz = KordinateIzTrenutnogRacunala1 + kordinateIzPoslanihPodataka1;
-
-        //Debug.Log("Srednja koordinata DESNE : " + (KordinateIzTrenutnogRacunala1) + " + " + (kordinateIzPoslanihPodataka1) + " /2 " + " = " + (rezzz / 2));
-
-    }
-
 
     /*************************************************************************/
 
