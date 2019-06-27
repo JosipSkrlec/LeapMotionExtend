@@ -655,6 +655,8 @@ public class KontrolaLeap2 : MonoBehaviour
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
+        IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+
         // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
         // varijable su postavljene na 5 jer lijeva strana leap-a je u - koordinati pa se tako od 5 oduzme -0.2578458 koordinata te se kasnije provjeri koja je blize
         kordinateIzPoslanihPodataka = 5.0f;
@@ -703,7 +705,7 @@ public class KontrolaLeap2 : MonoBehaviour
                     if (DesniLeap == true)
                     {
                         KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
-                        Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
+                        //Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
                         ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
                     }
                     else
@@ -725,7 +727,7 @@ public class KontrolaLeap2 : MonoBehaviour
                     if (DesniLeap == true)
                     {
                         kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
-                        Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
+                        //Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
                         ListaKoordinata.Add(kordinateIzPoslanihPodataka);
                     }
                     else
@@ -954,7 +956,7 @@ public class KontrolaLeap2 : MonoBehaviour
             #endregion
 
 
-            //Debug.Log(trenutna + " " + ProsleKoordinate);
+            Debug.Log(trenutna + " " + ProsleKoordinate);
 
             #region Check
             if (TrenutneKoordinate2.x < 0.0000f)
@@ -989,7 +991,7 @@ public class KontrolaLeap2 : MonoBehaviour
             {
                 trenutna = new Vector3(trenutna.x * -1, trenutna.y, trenutna.z);
             }
-            //Debug.Log("POSLANI = " + trenutna);
+            Debug.Log("POSLANI = " + trenutna);
 
 
             objekt1.transform.position = trenutna;
