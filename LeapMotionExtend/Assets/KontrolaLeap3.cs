@@ -649,20 +649,19 @@ public class KontrolaLeap3 : MonoBehaviour
 
     //} // Update
 
+
     private void Update()
     {
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
         // ovo je u slucaju da ne postoji drugo racunalo...
-        IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+        //IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
 
         // refresh varijable na 5 pomocu kojih mjerimo udaljenost Palm-a
         // varijable su postavljene na 5 jer lijeva strana leap-a je u - koordinati pa se tako od 5 oduzme -0.2578458 koordinata te se kasnije provjeri koja je blize
         kordinateIzPoslanihPodataka = 5.0f;
         KordinateIzTrenutnogRacunala = 5.0f;
-        kordinateIzPoslanihPodataka1 = 5.0f;
-        KordinateIzTrenutnogRacunala1 = 5.0f;
 
         if (slanjePodataka != false)
         {
@@ -693,8 +692,6 @@ public class KontrolaLeap3 : MonoBehaviour
 
             List<Hand> hands = FloatArrayToHands(dataReceived, zgloboviIKostiPrimljeniPodaci);
 
-            List<Hand> lijevarukatrenutni = new List<Hand>();
-            List<Hand> lijevarukaposlani = new List<Hand>();
 
             vrijemeodbrojavanja += Time.deltaTime;
 
@@ -708,15 +705,7 @@ public class KontrolaLeap3 : MonoBehaviour
                         Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
                         ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
                     }
-                    else
-                    {
-                        KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala + hh.PalmPosition.x;
-                        ////Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
-                    }
-
                 }
-                // nedostaje za desnu
-
             }
 
             // hands podaci  iz poslanih podataka
@@ -730,27 +719,19 @@ public class KontrolaLeap3 : MonoBehaviour
                         Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
                         ListaKoordinata.Add(kordinateIzPoslanihPodataka);
                     }
-                    else
-                    {
-                        kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka - h.PalmPosition.x;
-                        //Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
-                    }
-
                 }
-                // nedostaje za desnu
-
             }
 
 
             // PRVI UVJET ZA LIJEVE RUKE
-            if (kordinateIzPoslanihPodataka == 5.0f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
+            if (kordinateIzPoslanihPodataka == 5.00000f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
             {
-                IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
+                pomakniRuku(currentFrame.Hands, zgloboviIKostiLeap, true);
             }
-            else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
+            else if (KordinateIzTrenutnogRacunala == 5.00000f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
             {
                 //IscrtajRukee(lijevarukaposlani, zgloboviIKostiLeap, true, "LRP");
-                IscrtajRuke2(hands, zgloboviIKostiLeap, false);
+                pomakniRuku(hands, zgloboviIKostiLeap, false);
             }
 
         }
@@ -760,27 +741,87 @@ public class KontrolaLeap3 : MonoBehaviour
     // TODO - varijable staviti gore nakon sto se napravi potrebno
     Leap.Vector ReferentnaTocka = new Leap.Vector();
 
-    void IscrtajRuke2(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
+    void pomakniRuku(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
-
         foreach (Hand hand in hands)
         {
-            if (sredinajednom == false && hand.PalmPosition.x < 0.03f && hand.PalmPosition.x > 0.0f)
+            if (sredinajednom == false /*&& hand.PalmPosition.x < 0.03f && hand.PalmPosition.x > 0.0f*/)
             {
                 sredinajednom = true;
 
-                ReferentnaTocka = Leap2LeapVector(objekt1.transform.localPosition);
-
-                Debug.Log("REFERENTNA: " + ReferentnaTocka);
-
                 objekt1.transform.position = new Vector3(hand.PalmPosition.x, hand.PalmPosition.y, hand.PalmPosition.z);
 
+                ReferentnaTocka = Leap2LeapVector(objekt1.transform.localPosition);
+
+                Debug.Log("REFERENTNA TOCKA: " + ReferentnaTocka);
             }
             if (sredinajednom == true)
             {
-                KOORDINATA(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(ReferentnaTocka), localData);
+                KOORDINATA2(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(ReferentnaTocka), localData);
                 ReferentnaTocka = hand.PalmPosition;
             }
+
+        }
+
+
+    }
+
+    float PomakXPrijasnji = 0.0f;
+    float PomakYPrijasnji = 0.0f;
+    float PomakZPrijasnji = 0.0f;
+
+    void KOORDINATA2(Vector3 TrenutniFrameKoordinate, Vector3 ProsliFrameKoordinate, bool localData)
+    {
+        float PomakX = 0.0f;
+        float PomakY = 0.0f;
+        float PomakZ = 0.0f;
+
+        // radi ukoliko je localdata true tj poslani podaci su samo iz trenutnog leap-a
+        if (localData == true)
+        {
+            PomakX = TrenutniFrameKoordinate.x - ProsliFrameKoordinate.x;
+            PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+            PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
+
+            PomakXPrijasnji = TrenutniFrameKoordinate.x - ProsliFrameKoordinate.x;
+            PomakYPrijasnji = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+            PomakZPrijasnji = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
+
+            Debug.Log("(TRENUTNI)pomicem objekt za = " + PomakX + " " + PomakXPrijasnji + " " + PomakY + " " + PomakZ);
+
+            //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
+
+            objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+
+
+
+        }
+        // radi ukoliko je localdata false tj poslani podaci su samo iz drugog leap-a
+        else
+        {
+            PomakX = TrenutniFrameKoordinate.x + ProsliFrameKoordinate.x;
+            PomakY = TrenutniFrameKoordinate.y + ProsliFrameKoordinate.y;
+            PomakZ = TrenutniFrameKoordinate.z + ProsliFrameKoordinate.z;
+
+            Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
+
+            //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
+
+            objekt1.transform.position = new Vector3(PomakXPrijasnji, PomakYPrijasnji,PomakZPrijasnji);
+            objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+
+            //Vector3 privremenivektor = TrenutniFrameKoordinate - ProsliFrameKoordinate;
+
+            //Vector3 privremeniVektor1 = new Vector3(TrenutniFrameKoordinate.x + ProsliFrameKoordinate.x,
+            //    TrenutniFrameKoordinate.y + ProsliFrameKoordinate.y,
+            //    TrenutniFrameKoordinate.z + ProsliFrameKoordinate.z);
+
+            //Debug.Log("POSLANI " + TrenutniFrameKoordinate + " " + ProsliFrameKoordinate + " " + privremeniVektor1);
+
+            ////Vector3 promjenasmjera = new Vector3(privremeniVektor1.x * -1, privremeniVektor1.y * -1, privremeniVektor1.z * -1);
+
+            //objekt1.transform.position = privremeniVektor1 + TrenutniLeapZadnjaKoordinataPrijeSwitcha;
+
 
         }
 
@@ -892,7 +933,6 @@ public class KontrolaLeap3 : MonoBehaviour
             //Debug.Log("TRENUTNI = " + trenutna);
 
             objekt1.transform.position = trenutna;
-            Instantiate(objekt1,trenutna,Quaternion.identity);
         }
         else
         {
@@ -998,11 +1038,11 @@ public class KontrolaLeap3 : MonoBehaviour
 
 
             objekt1.transform.position = trenutna;
-            Instantiate(objekt1, trenutna, Quaternion.identity);
         }
 
 
     }
+
 
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku tj kada se iscrtana ruka treba pobrisati da se iscrta ruka koja je blize tj. suprotna
     void Izbrisi(List<GameObject> zgloboviIKosti)
