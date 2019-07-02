@@ -770,6 +770,11 @@ public class KontrolaLeap3 : MonoBehaviour
     float PomakYPrijasnji = 0.0f;
     float PomakZPrijasnji = 0.0f;
 
+    bool promjena = false;
+    bool promjena2 = true;
+
+    // TODO - ignorirati velike pomake ukoliko leap ucita pogresno ruku... jer se zna desiti da su velika odstupanja pa je i tako velik pomak.
+    
     void KOORDINATA2(Vector3 TrenutniFrameKoordinate, Vector3 ProsliFrameKoordinate, bool localData)
     {
         float PomakX = 0.0f;
@@ -779,265 +784,145 @@ public class KontrolaLeap3 : MonoBehaviour
         // radi ukoliko je localdata true tj poslani podaci su samo iz trenutnog leap-a
         if (localData == true)
         {
-            PomakX = TrenutniFrameKoordinate.x - ProsliFrameKoordinate.x;
-            PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
-            PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
+            if (promjena2 == false)
+            {
+                promjena2 = true;
+                promjena = false;
 
-            PomakXPrijasnji = TrenutniFrameKoordinate.x - ProsliFrameKoordinate.x;
-            PomakYPrijasnji = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
-            PomakZPrijasnji = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
+                PomakX = TrenutniFrameKoordinate.x - (ProsliFrameKoordinate.x * -1);
+                PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+                PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
-            Debug.Log("(TRENUTNI)pomicem objekt za = " + PomakX + " " + PomakXPrijasnji + " " + PomakY + " " + PomakZ);
+                PomakXPrijasnji = TrenutniFrameKoordinate.x;
+                PomakYPrijasnji = TrenutniFrameKoordinate.y;
+                PomakZPrijasnji = TrenutniFrameKoordinate.z;
 
-            //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
 
-            objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+                Debug.Log("(TRENUTNI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
 
+                //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
+
+                objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+
+            }
+            else
+            {
+                PomakX = TrenutniFrameKoordinate.x - ProsliFrameKoordinate.x;
+                PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+                PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
+
+                PomakXPrijasnji = TrenutniFrameKoordinate.x;
+                PomakYPrijasnji = TrenutniFrameKoordinate.y;
+                PomakZPrijasnji = TrenutniFrameKoordinate.z;
+
+                promjena = false;
+
+
+                Debug.Log("(TRENUTNI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+
+                //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
+
+                objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+
+            }
 
 
         }
         // radi ukoliko je localdata false tj poslani podaci su samo iz drugog leap-a
         else
         {
-            PomakX = TrenutniFrameKoordinate.x + ProsliFrameKoordinate.x;
-            PomakY = TrenutniFrameKoordinate.y + ProsliFrameKoordinate.y;
-            PomakZ = TrenutniFrameKoordinate.z + ProsliFrameKoordinate.z;
+            if (promjena == false)
+            {
+                promjena = true;
+                promjena2 = false;
 
-            Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
+                PomakX = TrenutniFrameKoordinate.x - (ProsliFrameKoordinate.x * -1);
+                PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+                PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
-            //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
+                //Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
+                Debug.Log("(POSLANI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
 
-            objekt1.transform.position = new Vector3(PomakXPrijasnji, PomakYPrijasnji,PomakZPrijasnji);
-            objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+                //objekt1.transform.position = new Vector3( objekt1.transform.position.x * -1, objekt1.transform.position.y, objekt1.transform.position.z);
 
-            //Vector3 privremenivektor = TrenutniFrameKoordinate - ProsliFrameKoordinate;
+                objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
 
-            //Vector3 privremeniVektor1 = new Vector3(TrenutniFrameKoordinate.x + ProsliFrameKoordinate.x,
-            //    TrenutniFrameKoordinate.y + ProsliFrameKoordinate.y,
-            //    TrenutniFrameKoordinate.z + ProsliFrameKoordinate.z);
 
-            //Debug.Log("POSLANI " + TrenutniFrameKoordinate + " " + ProsliFrameKoordinate + " " + privremeniVektor1);
 
-            ////Vector3 promjenasmjera = new Vector3(privremeniVektor1.x * -1, privremeniVektor1.y * -1, privremeniVektor1.z * -1);
 
-            //objekt1.transform.position = privremeniVektor1 + TrenutniLeapZadnjaKoordinataPrijeSwitcha;
+            }
+            else
+            {
 
+                PomakX = TrenutniFrameKoordinate.x - ProsliFrameKoordinate.x;
+                PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+                PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
+
+                //Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
+                Debug.Log("(POSLANI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+
+                //objekt1.transform.position = new Vector3( objekt1.transform.position.x * -1, objekt1.transform.position.y, objekt1.transform.position.z);
+
+                objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
+
+
+
+            }
 
         }
 
 
     }
 
-    void KOORDINATA(Vector3 TrenutneKoordinate, Vector3 ProsleKoordinate, bool localData)
+    void KOORDINATA(Vector3 TrenutniFrameKoordinate, Vector3 ProsliFrameKoordinate, bool localData)
     {
-        float NovaX = 0.0f;
-        float NovaY = 0.0f;
-        float NovaZ = 0.0f;
+        float PomakX = 0.0f;
+        float PomakY = 0.0f;
+        float PomakZ = 0.0f;
 
+        // radi ukoliko je localdata true tj poslani podaci su samo iz trenutnog leap-a
         if (localData == true)
         {
-            Vector3 TrenutneKoordinate2 = new Vector3(TrenutneKoordinate.x, TrenutneKoordinate.y, TrenutneKoordinate.z);
-            Vector3 trenutna = new Vector3(ProsleKoordinate.x, ProsleKoordinate.y, ProsleKoordinate.z);
 
-            #region Pretvorba - u +
-            // trenutne koordinate iz hand-a
-            if (TrenutneKoordinate.x < 0.0f)
-            {
-                TrenutneKoordinate.x = (TrenutneKoordinate.x * -1);
-            }
-            if (TrenutneKoordinate.y < 0.0f)
-            {
-                TrenutneKoordinate.y = (TrenutneKoordinate.y * -1);
-            }
-            if (TrenutneKoordinate.z < 0.0f)
-            {
-                TrenutneKoordinate.z = (TrenutneKoordinate.z * -1);
-            }
-            // prosle koordinate
-            if (ProsleKoordinate.x < 0.0f)
-            {
-                ProsleKoordinate.x = (ProsleKoordinate.x * -1);
-            }
-            if (ProsleKoordinate.y < 0.0f)
-            {
-                ProsleKoordinate.y = (ProsleKoordinate.y * -1);
-            }
-            if (ProsleKoordinate.z < 0.0f)
-            {
-                ProsleKoordinate.z = (ProsleKoordinate.z * -1);
-            }
-            #endregion
+            PomakX = TrenutniFrameKoordinate.x - (ProsliFrameKoordinate.x * -1);
+            PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+            PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
-            #region Racunanje razlike koordinata
-            if (TrenutneKoordinate.x > ProsleKoordinate.x)
-            {
-                NovaX = TrenutneKoordinate.x - ProsleKoordinate.x;
-            }
-            else
-            {
-                NovaX = ProsleKoordinate.x - TrenutneKoordinate.x;
-            }
-
-            if (TrenutneKoordinate.y > ProsleKoordinate.y)
-            {
-                NovaY = TrenutneKoordinate.y - ProsleKoordinate.y;
-            }
-            else
-            {
-                NovaY = ProsleKoordinate.y - TrenutneKoordinate.y;
-            }
-
-            if (TrenutneKoordinate.z > ProsleKoordinate.z)
-            {
-                NovaZ = TrenutneKoordinate.z - ProsleKoordinate.z;
-            }
-            else
-            {
-                NovaZ = ProsleKoordinate.z - TrenutneKoordinate.z;
-            }
-
-            #endregion
+            PomakXPrijasnji = TrenutniFrameKoordinate.x;
+            PomakYPrijasnji = TrenutniFrameKoordinate.y;
+            PomakZPrijasnji = TrenutniFrameKoordinate.z;
 
 
-            //Debug.Log(trenutna + " " + ProsleKoordinate);
+            Debug.Log("(TRENUTNI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
 
-            #region Check
-            if (TrenutneKoordinate2.x < 0.0000f)
-            {
-                trenutna.x = trenutna.x - NovaX;
-            }
-            else
-            {
-                trenutna.x = trenutna.x - NovaX;
-            }
+            //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
 
-            if (TrenutneKoordinate2.y < 0.0000f)
-            {
-                trenutna.y = trenutna.y - NovaY;
-            }
-            else
-            {
-                trenutna.y = trenutna.y - NovaY;
-            }
+            objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
 
-            if (TrenutneKoordinate2.x < 0.0000f)
-            {
-                trenutna.z = trenutna.z - NovaZ;
-            }
-            else
-            {
-                trenutna.z = trenutna.z - NovaZ;
-            }
-            #endregion
-
-            //Debug.Log("TRENUTNI = " + trenutna);
-
-            objekt1.transform.position = trenutna;
         }
+
+        // radi ukoliko je localdata false tj poslani podaci su samo iz drugog leap-a
         else
         {
-            Vector3 TrenutneKoordinate2 = new Vector3(TrenutneKoordinate.x, TrenutneKoordinate.y, TrenutneKoordinate.z);
-            Vector3 trenutna = new Vector3(ProsleKoordinate.x, ProsleKoordinate.y, ProsleKoordinate.z);
-
-            #region Pretvorba - u +
-            // trenutne koordinate iz hand-a
-            if (TrenutneKoordinate.x < 0.0f)
-            {
-                TrenutneKoordinate.x = (TrenutneKoordinate.x * -1);
-            }
-            if (TrenutneKoordinate.y < 0.0f)
-            {
-                TrenutneKoordinate.y = (TrenutneKoordinate.y * -1);
-            }
-            if (TrenutneKoordinate.z < 0.0f)
-            {
-                TrenutneKoordinate.z = (TrenutneKoordinate.z * -1);
-            }
-            // prosle koordinate
-            if (ProsleKoordinate.x < 0.0f)
-            {
-                ProsleKoordinate.x = (ProsleKoordinate.x * -1);
-            }
-            if (ProsleKoordinate.y < 0.0f)
-            {
-                ProsleKoordinate.y = (ProsleKoordinate.y * -1);
-            }
-            if (ProsleKoordinate.z < 0.0f)
-            {
-                ProsleKoordinate.z = (ProsleKoordinate.z * -1);
-            }
-            #endregion
-
-            #region Racunanje razlike koordinata
-            if (TrenutneKoordinate.x > ProsleKoordinate.x)
-            {
-                NovaX = TrenutneKoordinate.x - ProsleKoordinate.x;
-            }
-            else
-            {
-                NovaX = ProsleKoordinate.x - TrenutneKoordinate.x;
-            }
-
-            if (TrenutneKoordinate.y > ProsleKoordinate.y)
-            {
-                NovaY = TrenutneKoordinate.y - ProsleKoordinate.y;
-            }
-            else
-            {
-                NovaY = ProsleKoordinate.y - TrenutneKoordinate.y;
-            }
-
-            if (TrenutneKoordinate.z > ProsleKoordinate.z)
-            {
-                NovaZ = TrenutneKoordinate.z - ProsleKoordinate.z;
-            }
-            else
-            {
-                NovaZ = ProsleKoordinate.z - TrenutneKoordinate.z;
-            }
-
-            #endregion
 
 
-            //Debug.Log(trenutna + " " + ProsleKoordinate);
+            PomakX = TrenutniFrameKoordinate.x - (ProsliFrameKoordinate.x * -1);
+            PomakY = TrenutniFrameKoordinate.y - ProsliFrameKoordinate.y;
+            PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
-            #region Check
-            if (TrenutneKoordinate2.x < 0.0000f)
-            {
-                trenutna.x = trenutna.x + NovaX;
-            }
-            else
-            {
-                trenutna.x = trenutna.x + NovaX;
-            }
+            //Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
+            Debug.Log("(POSLANI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
 
-            if (TrenutneKoordinate2.y < 0.0000f)
-            {
-                trenutna.y = trenutna.y + NovaY;
-            }
-            else
-            {
-                trenutna.y = trenutna.y + NovaY;
-            }
+            // ova linija mijenja smjer objekta iz -1 u 1... ali je potrebno napraviti s if-ovima jer 
+            // se tada ovo odvija svaki
+            //objekt1.transform.position = new Vector3( objekt1.transform.position.x * -1, objekt1.transform.position.y, objekt1.transform.position.z);
 
-            if (TrenutneKoordinate2.x < 0.0000f)
-            {
-                trenutna.z = trenutna.z + NovaZ;
-            }
-            else
-            {
-                trenutna.z = trenutna.z + NovaZ;
-            }
-            #endregion
-
-            if (trenutna.x > 0.0000f)
-            {
-                trenutna = new Vector3(trenutna.x * -1, trenutna.y, trenutna.z * -1);
-            }
-            //Debug.Log("POSLANI = " + trenutna);
+            objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
 
 
-            objekt1.transform.position = trenutna;
+            }
+
+
         }
 
 
