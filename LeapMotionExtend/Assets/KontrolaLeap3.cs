@@ -14,7 +14,7 @@ using System.Net.NetworkInformation;
 using UnityEngine.UI;
 
 // projekt je spremljen na github https://github.com/JosipSkrlec/LeapMotionExtend .
-public class KontrolaLeap2 : MonoBehaviour
+public class KontrolaLeap3 : MonoBehaviour
 {
     // za punjenje memorije, pogledati unity profiler za gfx...
     // Gfx.waitForPresent is like the CPU is waiting till the rendering process is finished.
@@ -208,7 +208,7 @@ public class KontrolaLeap2 : MonoBehaviour
     {
         return new Vector3(v.x, v.y, v.z);
     }
-   
+
     private Leap.Vector Leap2LeapVector(Vector3 v)
     {
         return new Leap.Vector(v.x, v.y, v.z);
@@ -681,7 +681,7 @@ public class KontrolaLeap2 : MonoBehaviour
         // Dio kôda za primanje podataka
         float time1 = Time.realtimeSinceStartup;
         byte[] data = udpReceive.ReceiveDataOnce();
-        float time2 = Time.realtimeSinceStartup;                     
+        float time2 = Time.realtimeSinceStartup;
 
         if (data != null)
         {
@@ -744,7 +744,7 @@ public class KontrolaLeap2 : MonoBehaviour
 
             // PRVI UVJET ZA LIJEVE RUKE
             if (kordinateIzPoslanihPodataka == 5.0f || kordinateIzPoslanihPodataka > KordinateIzTrenutnogRacunala)
-            { 
+            {
                 IscrtajRuke2(currentFrame.Hands, zgloboviIKostiLeap, true);
             }
             else if (KordinateIzTrenutnogRacunala == 5.0f || KordinateIzTrenutnogRacunala > kordinateIzPoslanihPodataka)
@@ -758,7 +758,7 @@ public class KontrolaLeap2 : MonoBehaviour
     } // Update
 
     // TODO - varijable staviti gore nakon sto se napravi potrebno
-    Leap.Vector novi = new Leap.Vector();
+    Leap.Vector ReferentnaTocka = new Leap.Vector();
 
     void IscrtajRuke2(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
@@ -769,15 +769,17 @@ public class KontrolaLeap2 : MonoBehaviour
             {
                 sredinajednom = true;
 
-                novi = Leap2LeapVector(objekt1.transform.localPosition);
+                ReferentnaTocka = Leap2LeapVector(objekt1.transform.localPosition);
+
+                Debug.Log("REFERENTNA: " + ReferentnaTocka);
 
                 objekt1.transform.position = new Vector3(hand.PalmPosition.x, hand.PalmPosition.y, hand.PalmPosition.z);
-               
+
             }
-            if(sredinajednom == true)
+            if (sredinajednom == true)
             {
-                KOORDINATA(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(novi), localData);
-                novi = hand.PalmPosition;
+                KOORDINATA(Leap2UnityVector(hand.PalmPosition), Leap2UnityVector(ReferentnaTocka), localData);
+                ReferentnaTocka = hand.PalmPosition;
             }
 
         }
@@ -890,6 +892,7 @@ public class KontrolaLeap2 : MonoBehaviour
             //Debug.Log("TRENUTNI = " + trenutna);
 
             objekt1.transform.position = trenutna;
+            Instantiate(objekt1,trenutna,Quaternion.identity);
         }
         else
         {
@@ -995,6 +998,7 @@ public class KontrolaLeap2 : MonoBehaviour
 
 
             objekt1.transform.position = trenutna;
+            Instantiate(objekt1, trenutna, Quaternion.identity);
         }
 
 
@@ -1002,7 +1006,7 @@ public class KontrolaLeap2 : MonoBehaviour
 
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku tj kada se iscrtana ruka treba pobrisati da se iscrta ruka koja je blize tj. suprotna
     void Izbrisi(List<GameObject> zgloboviIKosti)
-        {
+    {
         if (zgloboviIKosti != null)
         {
 

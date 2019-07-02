@@ -102,6 +102,7 @@
   <ItemGroup>
     <Compile Include="Assets\KontrolaLeap.cs" />
     <Compile Include="Assets\KontrolaLeap2.cs" />
+    <Compile Include="Assets\KontrolaLeap3.cs" />
     <Compile Include="Assets\LOPTICA.cs" />
     <Compile Include="Assets\LeapDohvatPodataka.cs" />
     <Compile Include="Assets\LeapMotion\Core\Scripts\Algorithms\SlidingMax.cs" />
