@@ -920,14 +920,10 @@ public class KontrolaLeap3 : MonoBehaviour
             objekt1.transform.position += new Vector3(PomakX, PomakY, PomakZ);
 
 
-            }
-
-
         }
 
 
     }
-
 
     // metoda koja popravlja ukoliko Leap ucita pogresnu ruku tj kada se iscrtana ruka treba pobrisati da se iscrta ruka koja je blize tj. suprotna
     void Izbrisi(List<GameObject> zgloboviIKosti)
