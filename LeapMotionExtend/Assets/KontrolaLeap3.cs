@@ -72,6 +72,11 @@ public class KontrolaLeap3 : MonoBehaviour
     float rezultat = 0;
     int brojackoordinata = 0;
 
+    ///**********************************************************************************************
+    private Vector3 RT_za_leap = new Vector3(); // ReferentnaTočka
+    private bool postaviReferentnuTocku = true;
+    private Vector3 RT_za_prikaz = new Vector3(-0.01f, 0.4f, 0.004f);   // početni položaj
+
     private void Start()
     {
         leapProvider = FindObjectOfType<LeapServiceProvider>();
@@ -650,8 +655,87 @@ public class KontrolaLeap3 : MonoBehaviour
     //} // Update
 
 
+    private void Update2()
+    {
+        Frame currentFrame = leapProvider.CurrentFrame;
+        var ruke = currentFrame.Hands;
+        Hand ruka = null;
+        if ((ruke!= null) && (ruke.Count >= 1)) {
+            ruka = ruke[0];
+        }
+
+        Leap.Vector palmPosition = ruka.PalmPosition;
+        
+
+        GameObject oznaka = GameObject.Find("PolozajDlanaOznaka");
+        Destroy(oznaka);
+
+        GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        k.name = "PolozajDlanaOznaka";
+        k.transform.position = Leap2UnityVector(palmPosition);
+        k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+
+        // Debug.LogWarning("Koorindate: " + palmPosition.x + ", " + palmPosition.y + ", " + palmPosition.z);
+
+        GameObject relativniPolozajOznaka = GameObject.Find("PolozajDlanaRelativniPomak");
+        Destroy(relativniPolozajOznaka);
+        GameObject a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        a.name = "PolozajDlanaRelativniPomak";
+        a.transform.position = RT_za_prikaz;
+        a.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+        a.GetComponent<Renderer>().material.color = new Color(1, 0, 0);
+
+        GameObject refentnaTockaPrikaz = GameObject.Find("RefTocka");
+        Destroy(refentnaTockaPrikaz);
+        GameObject c = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        c.name = "RefTocka";
+        c.transform.position = RT_za_prikaz;
+        c.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+        c.GetComponent<Renderer>().material.color = new Color(0, 0, 1);
+
+
+        double udaljenost = Math.Sqrt(Math.Pow(palmPosition.x, 2) + Math.Pow(palmPosition.y, 2) + Math.Pow(palmPosition.z, 2));
+        
+        // Debug.LogWarning("Udaljenost : " + udaljenost);
+        // Eskperimentalnim putem određeno da je "lijepa"/pristojna udaljenost za uzimanje referentne 
+        // točke 0.15 u Leap koorinarama, a kako je izračunato u liniji koda gore.
+        if (postaviReferentnuTocku && udaljenost < 0.15f)
+        {
+            postaviReferentnuTocku = false;
+            RT_za_leap = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
+        }
+
+        // kad je Referentna Točka postavljenja, računaj udaljenost i pomak do trenutne pozicije
+
+        if (!postaviReferentnuTocku)
+        {
+            GameObject refentnaTockaLeap = GameObject.Find("RefTocka");
+            Destroy(refentnaTockaLeap);
+            GameObject b = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            b.name = "RefTocka";
+            b.transform.position = RT_za_leap;
+            b.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+            b.GetComponent<Renderer>().material.color = new Color(0, 1, 0);
+
+            var vektor_razlike = Leap2UnityVector(palmPosition) - RT_za_leap;
+            a.transform.position = RT_za_prikaz + vektor_razlike;        /// VAŽNO!!! KLJUČNO!!!
+
+            // Položaj se izračunava kao pomak od početne koordinate
+
+            // TJ. VAŽNO!!! Koliko je bijela (dlan) udaljena od zelena (Leap) toliko se crvena (prikaz) pomiče od plave.
+            // Plava točka (referenca za prikaz) se može postaviti proizvoljno.
+
+
+        }
+
+    }
+
     private void Update()
     {
+        Update2();
+        return;
+
+
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
         Frame currentFrame = leapProvider.CurrentFrame;
 
@@ -678,9 +762,12 @@ public class KontrolaLeap3 : MonoBehaviour
         }
 
         // Dio kôda za primanje podataka
+       
         float time1 = Time.realtimeSinceStartup;
         byte[] data = udpReceive.ReceiveDataOnce();
         float time2 = Time.realtimeSinceStartup;
+        
+
 
         if (data != null)
         {
@@ -695,6 +782,8 @@ public class KontrolaLeap3 : MonoBehaviour
 
             vrijemeodbrojavanja += Time.deltaTime;
 
+
+            // TASK1
             foreach (Hand hh in currentFrame.Hands)
             {
                 if (hh.IsLeft)
@@ -702,8 +791,9 @@ public class KontrolaLeap3 : MonoBehaviour
                     if (DesniLeap == true)
                     {
                         KordinateIzTrenutnogRacunala = KordinateIzTrenutnogRacunala - hh.PalmPosition.x;
-                        Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
+                        //Debug.Log("LIJEVA ruka trenutni podaci: " + hh.PalmPosition.x + " " + hh.PalmPosition.y + " " + hh.PalmPosition.z);
                         ListaKoordinata.Add(KordinateIzTrenutnogRacunala);
+                        TrenutneKoordinate = hh.PalmPosition;
                     }
                 }
             }
@@ -716,8 +806,9 @@ public class KontrolaLeap3 : MonoBehaviour
                     if (DesniLeap == true)
                     {
                         kordinateIzPoslanihPodataka = kordinateIzPoslanihPodataka + h.PalmPosition.x;
-                        Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
+                        //Debug.Log("LIJEVA ruka poslani podaci: " + h.PalmPosition.x + " " + h.PalmPosition.y + " " + h.PalmPosition.z);
                         ListaKoordinata.Add(kordinateIzPoslanihPodataka);
+                        PoslaneKoordinate = h.PalmPosition;
                     }
                 }
             }
@@ -740,6 +831,9 @@ public class KontrolaLeap3 : MonoBehaviour
 
     // TODO - varijable staviti gore nakon sto se napravi potrebno
     Leap.Vector ReferentnaTocka = new Leap.Vector();
+
+    Leap.Vector TrenutneKoordinate = new Leap.Vector();
+    Leap.Vector PoslaneKoordinate = new Leap.Vector();
 
     void pomakniRuku(List<Hand> hands, List<GameObject> zgloboviIKosti, bool localData)
     {
@@ -798,7 +892,7 @@ public class KontrolaLeap3 : MonoBehaviour
                 PomakZPrijasnji = TrenutniFrameKoordinate.z;
 
 
-                Debug.Log("(TRENUTNI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+                Debug.Log("(TRENUTNI) X trenutni = " + TrenutniFrameKoordinate.x + " MINUS X poslani " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX + " /// Trenutne koordinate = " + TrenutneKoordinate + " poslane koordinate = " + PoslaneKoordinate);
 
                 //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
 
@@ -818,7 +912,7 @@ public class KontrolaLeap3 : MonoBehaviour
                 promjena = false;
 
 
-                Debug.Log("(TRENUTNI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+                Debug.Log("(TRENUTNI) X trenutni = " + TrenutniFrameKoordinate.x + " MINUS X poslani " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX + " /// Trenutne koordinate = " + TrenutneKoordinate + " poslane koordinate = " + PoslaneKoordinate);
 
                 //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
 
@@ -841,7 +935,7 @@ public class KontrolaLeap3 : MonoBehaviour
                 PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
                 //Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
-                Debug.Log("(POSLANI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+                Debug.Log("(POSLANI) X trenutni = " + TrenutniFrameKoordinate.x + " MINUS X poslani " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX + " /// Trenutne koordinate = " + TrenutneKoordinate + " poslane koordinate = " + PoslaneKoordinate);
 
                 //objekt1.transform.position = new Vector3( objekt1.transform.position.x * -1, objekt1.transform.position.y, objekt1.transform.position.z);
 
@@ -859,7 +953,7 @@ public class KontrolaLeap3 : MonoBehaviour
                 PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
                 //Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
-                Debug.Log("(POSLANI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+                Debug.Log("(POSLANI) X trenutni = " + TrenutniFrameKoordinate.x + " MINUS X poslani " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX + " /// Trenutne koordinate = " + TrenutneKoordinate + " poslane koordinate = " + PoslaneKoordinate);
 
                 //objekt1.transform.position = new Vector3( objekt1.transform.position.x * -1, objekt1.transform.position.y, objekt1.transform.position.z);
 
@@ -893,7 +987,7 @@ public class KontrolaLeap3 : MonoBehaviour
             PomakZPrijasnji = TrenutniFrameKoordinate.z;
 
 
-            Debug.Log("(TRENUTNI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+            Debug.Log("(TRENUTNI) X trenutni = " + TrenutniFrameKoordinate.x + " MINUS X poslani " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX + " /// Trenutne koordinate = " + TrenutneKoordinate + " poslane koordinate = " + PoslaneKoordinate);
 
             //TrenutniLeapZadnjaKoordinataPrijeSwitcha = TrenutniFrameKoordinate;
 
@@ -911,7 +1005,7 @@ public class KontrolaLeap3 : MonoBehaviour
             PomakZ = TrenutniFrameKoordinate.z - ProsliFrameKoordinate.z;
 
             //Debug.Log("(POSLANI)pomicem objekt za = " + PomakX + " " + PomakY + " " + PomakZ);
-            Debug.Log("(POSLANI)pomicem objekt za = " + TrenutniFrameKoordinate.x + " MINUS " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX);
+            Debug.Log("(POSLANI) X trenutni = " + TrenutniFrameKoordinate.x + " MINUS X poslani " + ProsliFrameKoordinate.x + " = POMAK ZA " + PomakX + " /// Trenutne koordinate = " + TrenutneKoordinate + " poslane koordinate = " + PoslaneKoordinate);
 
             // ova linija mijenja smjer objekta iz -1 u 1... ali je potrebno napraviti s if-ovima jer 
             // se tada ovo odvija svaki
