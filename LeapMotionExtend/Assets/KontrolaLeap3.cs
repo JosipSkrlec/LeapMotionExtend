@@ -849,7 +849,7 @@ public class KontrolaLeap3 : MonoBehaviour
         // Debug.LogWarning("Udaljenost : " + udaljenost);
         // Eskperimentalnim putem određeno da je "lijepa"/pristojna udaljenost za uzimanje referentne 
         // točke 0.15 u Leap koorinarama, a kako je izračunato u liniji koda gore.
-        if (postaviReferentnuTocku && udaljenost < 0.15f)
+        if (postaviReferentnuTocku)
         {
             postaviReferentnuTocku = false;
             RT_za_leap = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
@@ -931,7 +931,7 @@ public class KontrolaLeap3 : MonoBehaviour
         b.name = "RefTocka1";
         b.transform.position = RT_za_leap1;
         b.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
-        b.GetComponent<Renderer>().material.color = new Color(0, 1, 0);
+        b.GetComponent<Renderer>().material.color = new Color32(232, 0, 254, 1);
 
         var vektor_razlike = Leap2UnityVector(palmPosition) - RT_za_leap1;
         a.transform.position = RT_za_prikaz1 + vektor_razlike;        /// VAŽNO!!! KLJUČNO!!!
