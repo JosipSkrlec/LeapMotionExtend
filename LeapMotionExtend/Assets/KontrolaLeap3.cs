@@ -78,7 +78,7 @@ public class KontrolaLeap3 : MonoBehaviour
     private bool postaviReferentnuTocku = true;
     private bool postaviReferentnuTocku1 = true;
     private Vector3 RT_za_prikaz = new Vector3(-0.01f, 0.4f, 0.004f);   // početni položaj
-    private Vector3 RT_za_prikaz1 = new Vector3(0.01f, 0.4f, 0.004f);   // početni položaj2
+    private Vector3 RT_za_prikaz1 = new Vector3(-0.01f, 0.4f, 0.004f);   // početni položaj2
 
     private void Start()
     {
@@ -732,13 +732,14 @@ public class KontrolaLeap3 : MonoBehaviour
         }
 
     }
-
-    Leap.Vector palmPosition2 = new Vector();
     Leap.Vector Trenutnekoordinate = new Vector();
     Leap.Vector Poslanekoordinate = new Vector();
 
     private void Update3()
     {
+        Leap.Vector palmPosition1 = new Vector();
+        Leap.Vector palmPosition2 = new Vector();
+
         Frame currentFrame = leapProvider.CurrentFrame;
         var ruke = currentFrame.Hands;
         Hand ruka = null;
@@ -772,7 +773,7 @@ public class KontrolaLeap3 : MonoBehaviour
         }
 
 
-        Leap.Vector palmPosition1 = ruka.PalmPosition;
+        palmPosition1 = ruka.PalmPosition;
         Trenutnekoordinate = ruka.PalmPosition;
 
         //Debug.Log(palmPosition1 + " AAA " + palmPosition2);
