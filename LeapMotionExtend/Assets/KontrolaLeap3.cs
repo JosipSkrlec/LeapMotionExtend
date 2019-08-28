@@ -74,7 +74,9 @@ public class KontrolaLeap3 : MonoBehaviour
 
     ///**********************************************************************************************
     private Vector3 RT_za_leap = new Vector3(); // ReferentnaTočka
+    private Vector3 RT_za_leap1 = new Vector3();
     private bool postaviReferentnuTocku = true;
+    private bool postaviReferentnuTocku1 = true;
     private Vector3 RT_za_prikaz = new Vector3(-0.01f, 0.4f, 0.004f);   // početni položaj
 
     private void Start()
@@ -654,19 +656,159 @@ public class KontrolaLeap3 : MonoBehaviour
 
     //} // Update
 
+    //private void Update2()
+    //{
+    //    Frame currentFrame = leapProvider.CurrentFrame;
+    //    var ruke = currentFrame.Hands;
+    //    Hand ruka = null;
+    //    if ((ruke!= null) && (ruke.Count >= 1)) {
+    //        ruka = ruke[0];
+    //    }
 
-    private void Update2()
+    //    Leap.Vector palmPosition = ruka.PalmPosition;
+
+
+    //    GameObject oznaka = GameObject.Find("PolozajDlanaOznaka");
+    //    Destroy(oznaka);
+
+    //    GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    k.name = "PolozajDlanaOznaka";
+    //    k.transform.position = Leap2UnityVector(palmPosition);
+    //    k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+
+    //    // Debug.LogWarning("Koorindate: " + palmPosition.x + ", " + palmPosition.y + ", " + palmPosition.z);
+
+    //    GameObject relativniPolozajOznaka = GameObject.Find("PolozajDlanaRelativniPomak");
+    //    Destroy(relativniPolozajOznaka);
+    //    GameObject a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    a.name = "PolozajDlanaRelativniPomak";
+    //    a.transform.position = RT_za_prikaz;
+    //    a.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+    //    a.GetComponent<Renderer>().material.color = new Color(1, 0, 0);
+
+    //    GameObject refentnaTockaPrikaz = GameObject.Find("RefTocka");
+    //    Destroy(refentnaTockaPrikaz);
+    //    GameObject c = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    c.name = "RefTocka";
+    //    c.transform.position = RT_za_prikaz;
+    //    c.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+    //    c.GetComponent<Renderer>().material.color = new Color(0, 0, 1);
+
+
+    //    double udaljenost = Math.Sqrt(Math.Pow(palmPosition.x, 2) + Math.Pow(palmPosition.y, 2) + Math.Pow(palmPosition.z, 2));
+
+    //    // Debug.LogWarning("Udaljenost : " + udaljenost);
+    //    // Eskperimentalnim putem određeno da je "lijepa"/pristojna udaljenost za uzimanje referentne 
+    //    // točke 0.15 u Leap koorinarama, a kako je izračunato u liniji koda gore.
+    //    if (postaviReferentnuTocku && udaljenost < 0.15f)
+    //    {
+    //        postaviReferentnuTocku = false;
+    //        RT_za_leap = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
+    //    }
+
+    //    // kad je Referentna Točka postavljenja, računaj udaljenost i pomak do trenutne pozicije
+
+    //    if (!postaviReferentnuTocku)
+    //    {
+    //        GameObject refentnaTockaLeap = GameObject.Find("RefTocka");
+    //        Destroy(refentnaTockaLeap);
+    //        GameObject b = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //        b.name = "RefTocka";
+    //        b.transform.position = RT_za_leap;
+    //        b.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+    //        b.GetComponent<Renderer>().material.color = new Color(0, 1, 0);
+
+    //        var vektor_razlike = Leap2UnityVector(palmPosition) - RT_za_leap;
+    //        a.transform.position = RT_za_prikaz + vektor_razlike;        /// VAŽNO!!! KLJUČNO!!!
+
+    //        // Položaj se izračunava kao pomak od početne koordinate
+
+    //        // TJ. VAŽNO!!! Koliko je bijela (dlan) udaljena od zelena (Leap) toliko se crvena (prikaz) pomiče od plave.
+    //        // Plava točka (referenca za prikaz) se može postaviti proizvoljno.
+
+
+    //    }
+
+    //}
+
+    Leap.Vector palmPosition2 = new Vector();
+
+    Leap.Vector Trenutnekoordinate = new Vector();
+    Leap.Vector Poslanekoordinate = new Vector();
+
+    private void Update3()
     {
+        //*************
         Frame currentFrame = leapProvider.CurrentFrame;
         var ruke = currentFrame.Hands;
         Hand ruka = null;
-        if ((ruke!= null) && (ruke.Count >= 1)) {
+
+        if ((ruke != null) && (ruke.Count >= 1))
+        {
             ruka = ruke[0];
         }
+        //*************
+        //*************
+        byte[] data = udpReceive.ReceiveDataOnce();
 
-        Leap.Vector palmPosition = ruka.PalmPosition;
-        
+        if (data != null)
+        {
 
+            IFormatter formatter = new BinaryFormatter();
+            MemoryStream ms = new MemoryStream(data);
+
+            List<float> dataReceived = (List<float>)formatter.Deserialize(ms);
+
+            List<Hand> hands = FloatArrayToHands(dataReceived, zgloboviIKostiPrimljeniPodaci); // zgloboviIKostiPrimljeniPodaci
+            //*************
+            palmPosition2 = hands[0].PalmPosition;
+            Poslanekoordinate = hands[0].PalmPosition;
+        }
+
+        Leap.Vector palmPosition1 = ruka.PalmPosition;
+        Trenutnekoordinate = ruka.PalmPosition;
+
+        Debug.Log(palmPosition1 + " " + palmPosition2);
+
+        // promjena - u + samo za odredivanje koji lead je blize
+        // kasnije se koristi opet sirogi (original podaci)
+        if (palmPosition1.x < 0.0f || palmPosition2.x < 0.0f)
+        {
+            if (palmPosition1.x < 0.0f)
+            {
+                palmPosition1.x *= -1;
+            }
+            else if(palmPosition2.x < 0.0f)
+            {
+                palmPosition2.x *= -1;
+            }
+
+        }
+        Debug.Log("drugi" + palmPosition1 + " " + palmPosition2);
+
+
+        if (palmPosition1.x < palmPosition2.x)
+        {
+            Debug.Log("prvi if");
+            trenutnileap(Trenutnekoordinate);
+        }
+
+        else
+        {
+            Debug.Log("drugi if");
+            PoslaniLeap(Poslanekoordinate);
+        }
+
+
+
+
+
+
+    }
+
+    void trenutnileap(Leap.Vector palmPosition)
+    {
+        postaviReferentnuTocku1 = true;
         GameObject oznaka = GameObject.Find("PolozajDlanaOznaka");
         Destroy(oznaka);
 
@@ -695,11 +837,11 @@ public class KontrolaLeap3 : MonoBehaviour
 
 
         double udaljenost = Math.Sqrt(Math.Pow(palmPosition.x, 2) + Math.Pow(palmPosition.y, 2) + Math.Pow(palmPosition.z, 2));
-        
+
         // Debug.LogWarning("Udaljenost : " + udaljenost);
         // Eskperimentalnim putem određeno da je "lijepa"/pristojna udaljenost za uzimanje referentne 
         // točke 0.15 u Leap koorinarama, a kako je izračunato u liniji koda gore.
-        if (postaviReferentnuTocku && udaljenost < 0.15f)
+        if (postaviReferentnuTocku)
         {
             postaviReferentnuTocku = false;
             RT_za_leap = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
@@ -727,12 +869,91 @@ public class KontrolaLeap3 : MonoBehaviour
 
 
         }
-
     }
+
+    void PoslaniLeap(Leap.Vector palmPosition)
+    {
+        postaviReferentnuTocku = true;
+        GameObject oznaka = GameObject.Find("PolozajDlanaOznaka1");
+        Destroy(oznaka);
+
+        GameObject k = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        k.name = "PolozajDlanaOznaka1";
+        k.transform.position = Leap2UnityVector(palmPosition);
+        k.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+
+        // Debug.LogWarning("Koorindate: " + palmPosition.x + ", " + palmPosition.y + ", " + palmPosition.z);
+
+        GameObject relativniPolozajOznaka = GameObject.Find("PolozajDlanaRelativniPomak");
+        Destroy(relativniPolozajOznaka);
+        GameObject a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        a.name = "PolozajDlanaRelativniPomak";
+        a.transform.position = RT_za_prikaz;
+        a.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+        a.GetComponent<Renderer>().material.color = new Color(1, 0, 0);
+
+        GameObject refentnaTockaPrikaz = GameObject.Find("RefTocka1");
+        Destroy(refentnaTockaPrikaz);
+        GameObject c = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        c.name = "RefTocka1";
+        c.transform.position = RT_za_prikaz;
+        c.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+        c.GetComponent<Renderer>().material.color = new Color(0, 0, 1);
+
+
+        double udaljenost = Math.Sqrt(Math.Pow(palmPosition.x, 2) + Math.Pow(palmPosition.y, 2) + Math.Pow(palmPosition.z, 2));
+
+        // Debug.LogWarning("Udaljenost : " + udaljenost);
+        // Eskperimentalnim putem određeno da je "lijepa"/pristojna udaljenost za uzimanje referentne 
+        // točke 0.15 u Leap koorinarama, a kako je izračunato u liniji koda gore.
+        if (postaviReferentnuTocku1)
+        {
+            postaviReferentnuTocku1 = false;
+            RT_za_leap1 = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
+        }
+
+        // kad je Referentna Točka postavljenja, računaj udaljenost i pomak do trenutne pozicije
+
+        if (!postaviReferentnuTocku1)
+        {
+            GameObject refentnaTockaLeap = GameObject.Find("RefTocka1");
+            Destroy(refentnaTockaLeap);
+            GameObject b = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            b.name = "RefTocka1";
+            b.transform.position = RT_za_leap1;
+            b.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
+            b.GetComponent<Renderer>().material.color = new Color32(143, 0, 254, 1);
+
+            var vektor_razlike = Leap2UnityVector(palmPosition) - RT_za_leap1;
+            a.transform.position = RT_za_prikaz + vektor_razlike;        /// VAŽNO!!! KLJUČNO!!!
+
+            // Položaj se izračunava kao pomak od početne koordinate
+
+            // TJ. VAŽNO!!! Koliko je bijela (dlan) udaljena od zelena (Leap) toliko se crvena (prikaz) pomiče od plave.
+            // Plava točka (referenca za prikaz) se može postaviti proizvoljno.
+
+
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void Update()
     {
-        Update2();
+        //Update2();
+        Update3();
         return;
 
 
