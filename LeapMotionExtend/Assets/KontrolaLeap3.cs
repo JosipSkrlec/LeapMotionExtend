@@ -746,12 +746,14 @@ public class KontrolaLeap3 : MonoBehaviour
 
     private void Update3()
     {
+        // stvaranje nove varijable u koju ce se zapisati trenutne pozicije palma iz trenutnih i poslanih podataka
         Leap.Vector palmPosition1 = new Vector();
         Leap.Vector palmPosition2 = new Vector();
 
         Frame currentFrame = leapProvider.CurrentFrame;
         var ruke = currentFrame.Hands;
         Hand ruka = null;
+
         if ((ruke != null) && (ruke.Count >= 1))
         {
             ruka = ruke[0];
@@ -760,7 +762,7 @@ public class KontrolaLeap3 : MonoBehaviour
         float time1 = Time.realtimeSinceStartup;
         byte[] data = udpReceive.ReceiveDataOnce();
         float time2 = Time.realtimeSinceStartup;
-
+        // data su podaci iz LAN-a
         if (data != null)
         {
             IFormatter formatter = new BinaryFormatter();
@@ -780,16 +782,16 @@ public class KontrolaLeap3 : MonoBehaviour
             }
 
         }
-
-
+        // TODO - staviti u try catch da ne baca error, jer ako ruka nije u vidokrugu leap-a tada ne moze zapisati poziciju u varijablu
         palmPosition1 = ruka.PalmPosition;
         Trenutnekoordinate = ruka.PalmPosition;
+
 
         //Debug.Log(palmPosition1 + " AAA " + palmPosition2);
 
         // do tud super
 
-        // potrebno po x osi odrediti blizeg, x se mora prebaciti u + te se onda provjerava koji je blize kojem leap-u
+        // potrebno po x osi odrediti blizeg, x se mora prebaciti iz - u + te se onda provjerava koji je blize kojem leap-u
         if (palmPosition1.x <= 0.0f || palmPosition2.x <= 0.0f)
         {
             if (palmPosition1.x <= 0.0f)
@@ -802,8 +804,12 @@ public class KontrolaLeap3 : MonoBehaviour
             }
 
         }
-        //Debug.Log(" NAKON = " + palmPosition1 + " AAA " + palmPosition2);
+        // zaokruzivanje na odreden broj decimala
+        //Debug.Log(" prije = " + palmPosition1 + " AAA " + palmPosition2);
+        palmPosition1.x = Mathf.Round(palmPosition1.x * 1000f) / 1000f;
 
+        palmPosition2.x = Mathf.Round(palmPosition2.x * 1000f) / 1000f;
+        //Debug.Log(" nakon = " + palmPosition1 + " AAA " + palmPosition2);
 
         if (palmPosition1.x < palmPosition2.x)
         {
@@ -825,7 +831,7 @@ public class KontrolaLeap3 : MonoBehaviour
     void Kontrola01(Leap.Vector palmPosition)
     {
         postaviReferentnuTocku1 = true;
-        float time1 = Time.realtimeSinceStartup;
+        //float time1 = Time.realtimeSinceStartup;
 
         // sphera se poravnava s palmposition-om
         PolozajDlanaOznaka.transform.position = Leap2UnityVector(palmPosition);
@@ -839,8 +845,8 @@ public class KontrolaLeap3 : MonoBehaviour
         // Debug.LogWarning("Udaljenost : " + udaljenost);
         // Eskperimentalnim putem određeno da je "lijepa"/pristojna udaljenost za uz
 
-        float time2 = Time.realtimeSinceStartup;
-        Debug.Log("Vrijeme " + (time2-time1));
+        //float time2 = Time.realtimeSinceStartup;
+        //Debug.Log("Vrijeme " + (time2-time1));
         if (postaviReferentnuTocku)
         {
             postaviReferentnuTocku = false;
@@ -904,6 +910,8 @@ public class KontrolaLeap3 : MonoBehaviour
 
         }
     }
+
+
 
 
     void Kontrola012(Leap.Vector palmPosition)
