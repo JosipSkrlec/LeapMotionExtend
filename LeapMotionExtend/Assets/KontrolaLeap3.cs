@@ -779,6 +779,8 @@ public class KontrolaLeap3 : MonoBehaviour
                 ruka1 = ruke1[0];
                 palmPosition2 = ruka1.PalmPosition;
                 Poslanekoordinate = ruka1.PalmPosition;
+                //palmPosition1 = ruka.PalmPosition;
+                //Trenutnekoordinate = ruka.PalmPosition;
             }
 
         }
@@ -806,23 +808,25 @@ public class KontrolaLeap3 : MonoBehaviour
         }
         // zaokruzivanje na odreden broj decimala
         //Debug.Log(" prije = " + palmPosition1 + " AAA " + palmPosition2);
-        palmPosition1.x = Mathf.Round(palmPosition1.x * 1000f) / 1000f;
+        palmPosition1.x = Mathf.Round(palmPosition1.x * 10000f) / 10000f;
 
-        palmPosition2.x = Mathf.Round(palmPosition2.x * 1000f) / 1000f;
+        palmPosition2.x = Mathf.Round(palmPosition2.x * 10000f) / 10000f;
+
+        Debug.Log(palmPosition1  + " " + palmPosition2);
         //Debug.Log(" nakon = " + palmPosition1 + " AAA " + palmPosition2);
 
-        if (palmPosition1.x < palmPosition2.x)
-        {
-            //Debug.Log(palmPosition1.x + " 1 je manji od 2 " + palmPosition2.x);
-            //Debug.Log("prva metoda");
-            Kontrola01(Trenutnekoordinate);
-
-        }
         if (palmPosition2.x < palmPosition1.x)
         {
             //Debug.Log(palmPosition2.x + " 2 je manji od 1 " + palmPosition1.x);
-            //Debug.Log("druga metoda");
+            Debug.Log("druga metoda");
             Kontrola02(Poslanekoordinate);
+
+        }
+        else if(palmPosition1.x < palmPosition2.x)
+        {
+            //Debug.Log(palmPosition1.x + " 1 je manji od 2 " + palmPosition2.x);
+            Debug.Log("prva metoda");
+            Kontrola01(Trenutnekoordinate);
 
         }
     }
