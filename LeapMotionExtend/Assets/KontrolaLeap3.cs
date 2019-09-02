@@ -77,8 +77,7 @@ public class KontrolaLeap3 : MonoBehaviour
     private Vector3 RT_za_leap1 = new Vector3();
     private bool postaviReferentnuTocku = true;
     private bool postaviReferentnuTocku1 = true;
-    private Vector3 RT_za_prikaz = new Vector3(-0.01f, 0.4f, 0.004f);   // početni položaj
-    private Vector3 RT_za_prikaz1 = new Vector3(-0.01f, 0.4f, 0.004f);   // početni položaj2
+    private Vector3 RT_za_prikaz = new Vector3(0.0f, 0.4f, 0.0f);   // početni položaj new Vector3(-0.01f, 0.4f, 0.004f);  
 
 
     // public varijable
@@ -812,21 +811,24 @@ public class KontrolaLeap3 : MonoBehaviour
 
         palmPosition2.x = Mathf.Round(palmPosition2.x * 10000f) / 10000f;
 
-        Debug.Log(palmPosition1  + " " + palmPosition2);
-        //Debug.Log(" nakon = " + palmPosition1 + " AAA " + palmPosition2);
+        //Debug.Log(palmPosition1  + " " + palmPosition2);
 
-        if (palmPosition2.x < palmPosition1.x)
+
+        Debug.Log(" nakon = " + palmPosition1 + " AAA " + palmPosition2);
+
+        if (palmPosition1.x < palmPosition2.x || palmPosition2.x == 0.00f)
+        {
+            //Debug.Log(palmPosition1.x + " 1 je manji od 2 " + palmPosition2.x);
+            Debug.Log("prva metoda");
+
+            Kontrola01(Trenutnekoordinate);
+
+        }
+        else if(palmPosition2.x < palmPosition1.x || palmPosition1.x == 0.00f)
         {
             //Debug.Log(palmPosition2.x + " 2 je manji od 1 " + palmPosition1.x);
             Debug.Log("druga metoda");
             Kontrola02(Poslanekoordinate);
-
-        }
-        else if(palmPosition1.x < palmPosition2.x)
-        {
-            //Debug.Log(palmPosition1.x + " 1 je manji od 2 " + palmPosition2.x);
-            Debug.Log("prva metoda");
-            Kontrola01(Trenutnekoordinate);
 
         }
     }
@@ -917,7 +919,6 @@ public class KontrolaLeap3 : MonoBehaviour
 
 
 
-
     void Kontrola012(Leap.Vector palmPosition)
     {
         postaviReferentnuTocku1 = true;
@@ -998,7 +999,7 @@ public class KontrolaLeap3 : MonoBehaviour
         Destroy(relativniPolozajOznaka);
         GameObject a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         a.name = "PolozajDlanaRelativniPomak";
-        a.transform.position = RT_za_prikaz1;
+        a.transform.position = RT_za_prikaz;
         a.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
         a.GetComponent<Renderer>().material.color = new Color(1, 0, 0);
 
@@ -1006,7 +1007,7 @@ public class KontrolaLeap3 : MonoBehaviour
         Destroy(refentnaTockaPrikaz);
         GameObject c = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         c.name = "RefTocka1";
-        c.transform.position = RT_za_prikaz1;
+        c.transform.position = RT_za_prikaz;
         c.transform.localScale = new Vector3(zglobVelicina, zglobVelicina, zglobVelicina);
         c.GetComponent<Renderer>().material.color = new Color(0, 0, 1);
 
@@ -1035,7 +1036,7 @@ public class KontrolaLeap3 : MonoBehaviour
         b.GetComponent<Renderer>().material.color = new Color32(232, 0, 254, 1);
 
         var vektor_razlike = Leap2UnityVector(palmPosition) - RT_za_leap1;
-        a.transform.position = RT_za_prikaz1 + vektor_razlike;        /// VAŽNO!!! KLJUČNO!!!
+        a.transform.position = RT_za_prikaz + vektor_razlike;        /// VAŽNO!!! KLJUČNO!!!
 
         // Položaj se izračunava kao pomak od početne koordinate
 
