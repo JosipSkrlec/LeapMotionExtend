@@ -743,11 +743,13 @@ public class KontrolaLeap3 : MonoBehaviour
     Leap.Vector Trenutnekoordinate = new Vector();
     Leap.Vector Poslanekoordinate = new Vector();
 
+    // stvaranje nove varijable u koju ce se zapisati trenutne pozicije palma iz trenutnih i poslanih podataka
+    Leap.Vector palmPosition1 = new Vector();
+    Leap.Vector palmPosition2 = new Vector();
+
+
     private void Update3()
     {
-        // stvaranje nove varijable u koju ce se zapisati trenutne pozicije palma iz trenutnih i poslanih podataka
-        Leap.Vector palmPosition1 = new Vector();
-        Leap.Vector palmPosition2 = new Vector();
 
         Frame currentFrame = leapProvider.CurrentFrame;
         var ruke = currentFrame.Hands;
@@ -758,9 +760,11 @@ public class KontrolaLeap3 : MonoBehaviour
             ruka = ruke[0];
         }
 
-        float time1 = Time.realtimeSinceStartup;
+        //float time1 = Time.realtimeSinceStartup;
         byte[] data = udpReceive.ReceiveDataOnce();
-        float time2 = Time.realtimeSinceStartup;
+        //float time2 = Time.realtimeSinceStartup;
+        //Debug.Log("Vrijeme = " + (time2-time1));
+
         // data su podaci iz LAN-a
         if (data != null)
         {
@@ -819,7 +823,7 @@ public class KontrolaLeap3 : MonoBehaviour
         if (palmPosition1.x < palmPosition2.x || palmPosition2.x == 0.00f)
         {
             //Debug.Log(palmPosition1.x + " 1 je manji od 2 " + palmPosition2.x);
-            Debug.Log("prva metoda");
+            //Debug.Log("prva metoda");
 
             Kontrola01(Trenutnekoordinate);
 
@@ -827,7 +831,8 @@ public class KontrolaLeap3 : MonoBehaviour
         else if(palmPosition2.x < palmPosition1.x || palmPosition1.x == 0.00f)
         {
             //Debug.Log(palmPosition2.x + " 2 je manji od 1 " + palmPosition1.x);
-            Debug.Log("druga metoda");
+            //Debug.Log("druga metoda");
+
             Kontrola02(Poslanekoordinate);
 
         }
@@ -896,16 +901,16 @@ public class KontrolaLeap3 : MonoBehaviour
         if (postaviReferentnuTocku1)
         {
             postaviReferentnuTocku1 = false;
-            RT_za_leap = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
+            RT_za_leap1 = new Vector3(palmPosition.x, palmPosition.y, palmPosition.z);
         }
 
         // kad je Referentna Točka postavljenja, računaj udaljenost i pomak do trenutne pozicije
 
         if (!postaviReferentnuTocku1)
         {
-            refTocka02.transform.position = RT_za_leap;
+            refTocka02.transform.position = RT_za_leap1;
 
-            var vektor_razlike1 = Leap2UnityVector(palmPosition) - RT_za_leap;
+            var vektor_razlike1 = Leap2UnityVector(palmPosition) - RT_za_leap1;
             PolozajDlanaRelativniPomak.transform.position = RT_za_prikaz + vektor_razlike1;        /// VAŽNO!!! KLJUČNO!!!
 
             // Položaj se izračunava kao pomak od početne koordinate
