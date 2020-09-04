@@ -261,8 +261,8 @@ namespace Leap.Unity.Interaction {
     /// for this controller is specified as ControllerTrackingMode.Custom, this value
     /// may be ignored.
     /// </summary>
-    public VRNode vrNode {
-      get { return chirality == Chirality.Left ? VRNode.LeftHand : VRNode.RightHand; }
+    public UnityEngine.XR.XRNode vrNode {
+      get { return chirality == Chirality.Left ? UnityEngine.XR.XRNode.LeftHand : UnityEngine.XR.XRNode.RightHand; }
     }
 
     /// <summary>
